@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { generateText } from 'ai'
+import { checkSubscriptionLimits } from '@/lib/subscription-limits'
 
 export async function POST(req: Request) {
   try {
@@ -7,6 +8,27 @@ export async function POST(req: Request) {
     const { integrationId, timeRange } = await req.json()
 
     const supabase = await createClient()
+    
+    const { data: integration } = await supabase
+      .from('cloud_integrations')
+      .select('company_id')
+      .eq('id', integrationId)
+      .single()
+    
+    if (!integration) {
+      return Response.json({ error: 'Integration not found' }, { status: 404 })
+    }
+    
+    const limits = await checkSubscriptionLimits(integration.company_id)
+    
+    if (!limits.canUseAI) {
+      console.log('[v0] AI recommendations disabled for this plan')
+      return Response.json({
+        recommendations: [],
+        message: 'AI recommendations are not available on your current plan. Upgrade to Starter or Professional plan to unlock AI-powered insights.',
+        upgradeRequired: true
+      })
+    }
 
     const threeMonthsAgo = new Date()
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
@@ -129,10 +151,10 @@ Category: "cost" | "performance" | "security" | "reliability"`
     let recommendations
     try {
       let cleanedText = text.trim()
-      if (cleanedText.startsWith('```json')) {
-        cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/\s*```$/, '')
-      } else if (cleanedText.startsWith('```')) {
-        cleanedText = cleanedText.replace(/^```\s*/, '').replace(/\s*```$/, '')
+      if (cleanedText.startsWith('\`\`\`json')) {
+        cleanedText = cleanedText.replace(/^\`\`\`json\s*/, '').replace(/\s*\`\`\`$/, '')
+      } else if (cleanedText.startsWith('\`\`\`')) {
+        cleanedText = cleanedText.replace(/^\`\`\`\s*/, '').replace(/\s*\`\`\`$/, '')
       }
       
       const parsed = JSON.parse(cleanedText)

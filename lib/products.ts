@@ -4,6 +4,10 @@ export interface Product {
   description: string
   priceInCents: number
   features: string[]
+  maxIntegrations: number
+  maxCloudSpend: number
+  maxAnalysisMonths: number
+  aiRecommendationsEnabled: boolean
 }
 
 export const PRODUCTS: Product[] = [
@@ -19,6 +23,10 @@ export const PRODUCTS: Product[] = [
       "Basic recommendations",
       "Email support",
     ],
+    maxIntegrations: 1,
+    maxCloudSpend: 5000,
+    maxAnalysisMonths: 3,
+    aiRecommendationsEnabled: false,
   },
   {
     id: "starter",
@@ -29,9 +37,14 @@ export const PRODUCTS: Product[] = [
       "Up to $50K monthly cloud spend",
       "3 cloud accounts",
       "Real-time cost monitoring",
-      "Basic recommendations",
+      "AI-powered recommendations",
+      "6 months analysis",
       "Email support",
     ],
+    maxIntegrations: 3,
+    maxCloudSpend: 50000,
+    maxAnalysisMonths: 6,
+    aiRecommendationsEnabled: true,
   },
   {
     id: "professional",
@@ -42,9 +55,14 @@ export const PRODUCTS: Product[] = [
       "Up to $250K monthly cloud spend",
       "10 cloud accounts",
       "Advanced AI recommendations",
+      "12 months analysis",
       "Anomaly detection",
       "Custom budget alerts",
       "Priority support",
     ],
+    maxIntegrations: 10,
+    maxCloudSpend: 250000,
+    maxAnalysisMonths: 12,
+    aiRecommendationsEnabled: true,
   },
 ]

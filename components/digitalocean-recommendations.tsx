@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { AlertCircle, CheckCircle, TrendingDown, Loader2, Sparkles } from 'lucide-react'
+import { AlertCircle, CheckCircle, TrendingDown, Loader2, Sparkles, Lock } from 'lucide-react'
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 
@@ -37,10 +37,12 @@ export function DigitalOceanRecommendations({
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [upgradeRequired, setUpgradeRequired] = useState(false)
 
   const fetchRecommendations = async () => {
     setLoading(true)
     setError(null)
+    setUpgradeRequired(false)
 
     try {
       console.log("[v0] Fetching AI recommendations for integration:", integrationId)
@@ -58,6 +60,10 @@ export function DigitalOceanRecommendations({
       const data = await response.json()
       console.log("[v0] Received", data.recommendations?.length, "AI recommendations")
       setRecommendations(data.recommendations || [])
+      if (data.upgradeRequired) {
+        setUpgradeRequired(true)
+        setError(data.message || "AI recommendations require a paid plan")
+      }
     } catch (err) {
       console.error("[v0] Error fetching recommendations:", err)
       setError("Failed to generate recommendations. Please try again.")
@@ -69,6 +75,35 @@ export function DigitalOceanRecommendations({
   useEffect(() => {
     fetchRecommendations()
   }, [integrationId, timeRange])
+
+  if (upgradeRequired) {
+    return (
+      <Card className="bg-slate-800/50 border-slate-700">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Lock className="w-5 h-5 text-yellow-400" />
+            <CardTitle className="text-white">AI Cost Optimization</CardTitle>
+            <Badge className="bg-yellow-600/20 text-yellow-300 border-yellow-500/50">Pro Feature</Badge>
+          </div>
+          <CardDescription className="text-slate-400">
+            Upgrade to unlock AI-powered recommendations
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-center py-8">
+            <Sparkles className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
+            <p className="text-slate-300 font-medium mb-2">AI Recommendations Unavailable</p>
+            <p className="text-slate-400 text-sm mb-4">
+              {error || "AI recommendations are not available on your current plan."}
+            </p>
+            <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
+              <a href="/dashboard/billing">Upgrade Plan</a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card className="bg-slate-800/50 border-slate-700">
@@ -94,7 +129,7 @@ export function DigitalOceanRecommendations({
           </Button>
         </div>
         <CardDescription className="text-slate-400">
-          AI-powered recommendations based on your usage patterns
+          AI-powered recommendations based on your last 3 months usage
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -106,7 +141,7 @@ export function DigitalOceanRecommendations({
           </div>
         )}
 
-        {error && (
+        {error && !upgradeRequired && (
           <div className="text-center py-8">
             <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
             <p className="text-red-300 font-medium mb-1">Error</p>
@@ -128,9 +163,11 @@ export function DigitalOceanRecommendations({
                     <Badge className="bg-emerald-600/20 text-emerald-300 border-emerald-500/50">
                       {rec.category}
                     </Badge>
-                    <span className="text-sm text-green-400 font-medium">
-                      Save ${rec.potential_savings.toFixed(2)}/mo
-                    </span>
+                    {rec.potential_savings > 0 && (
+                      <span className="text-sm text-green-400 font-medium">
+                        Save ${rec.potential_savings.toFixed(2)}/mo
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
