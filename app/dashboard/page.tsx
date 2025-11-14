@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, TrendingDown, Server, AlertCircle } from "lucide-react"
+import { DollarSign, TrendingDown, Server, AlertCircle } from 'lucide-react'
 import { ClientNav } from "@/components/client-nav"
 import { CostChart } from "@/components/cost-chart"
 import { CloudAccountsCard } from "@/components/cloud-accounts-card"
@@ -69,13 +69,10 @@ export default async function ClientDashboard({
   const activeIntegrations = integrations?.filter((i) => i.is_active) || []
 
   // If no integrations, redirect to setup
-  if (activeIntegrations.length === 0) {
-    redirect("/dashboard/integrations")
-  }
-
-  if (!searchParams.provider) {
-    redirect("/dashboard/integrations")
-  }
+  // if (activeIntegrations.length === 0) {
+  //   redirect("/dashboard/integrations")
+  // }
+  // </CHANGE>
 
   let cloudAccountsQuery = supabase.from("cloud_accounts").select("*").eq("company_id", profile.company_id)
 
