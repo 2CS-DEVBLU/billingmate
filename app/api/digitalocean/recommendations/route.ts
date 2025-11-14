@@ -16,6 +16,7 @@ const recommendationSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    console.log('[v0] Fetching AI recommendations')
     const { integrationId, timeRange } = await req.json()
 
     const supabase = await createClient()
@@ -59,10 +60,7 @@ export async function POST(req: Request) {
       metadata: r.metadata,
     }))
 
-    const { object } = await generateObject({
-      model: 'openai/gpt-5-mini',
-      schema: recommendationSchema,
-      prompt: `You are a FinOps expert analyzing DigitalOcean cloud spending. Generate 3-5 actionable cost optimization recommendations based on this data:
+    const analysisPrompt = `You are a FinOps expert analyzing DigitalOcean cloud spending. Generate 3-5 actionable cost optimization recommendations based on this data:
 
 **Spending Overview:**
 - Total spend over ${timeRange} month(s): $${totalCost.toFixed(2)}
@@ -84,7 +82,19 @@ Generate specific, actionable recommendations focusing on:
 4. Cost-effective alternatives for current services
 5. Best practices for cloud cost optimization
 
-Each recommendation should include concrete steps to implement and realistic savings estimates. Focus on DigitalOcean-specific optimizations like Spaces storage optimization, droplet sizing, bandwidth usage, and managed database configurations.`,
+Each recommendation should include concrete steps to implement and realistic savings estimates. Focus on DigitalOcean-specific optimizations like Spaces storage optimization, droplet sizing, bandwidth usage, and managed database configurations.`
+
+    console.log('[v0] Generating recommendations with AI model')
+
+    const { object } = await generateObject({
+      model: 'openai/gpt-5',
+      schema: recommendationSchema,
+      messages: [
+        {
+          role: 'user',
+          content: analysisPrompt,
+        },
+      ],
       maxOutputTokens: 2000,
       temperature: 0.7,
     })
