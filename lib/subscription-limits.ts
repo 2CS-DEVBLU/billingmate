@@ -3,21 +3,27 @@ import { createClient } from "@/lib/supabase/server"
 export async function checkSubscriptionLimits(companyId: string) {
   const supabase = await createClient()
   
-  // Get subscription
   const { data: subscription } = await supabase
     .from("subscriptions")
     .select("*")
     .eq("company_id", companyId)
-    .single()
+    .maybeSingle()
   
   if (!subscription) {
     return {
       hasActiveSubscription: false,
-      canAddIntegration: false,
-      canUseAI: false,
-      maxAnalysisMonths: 3,
+      canAddIntegration: true, // Trial allows 1 integration
+      canUseAI: false, // Trial doesn't include AI
+      maxAnalysisMonths: 3, // Trial allows 3 months
       isOverSpendLimit: false,
-      limits: null
+      limits: {
+        maxIntegrations: 1,
+        currentIntegrations: 0,
+        maxCloudSpend: 5000,
+        currentCloudSpend: 0,
+        maxAnalysisMonths: 3,
+        aiRecommendationsEnabled: false,
+      }
     }
   }
   
