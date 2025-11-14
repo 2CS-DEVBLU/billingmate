@@ -1,13 +1,36 @@
 import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { DollarSign, TrendingDown, Server, AlertCircle, TrendingUp, Database } from 'lucide-react'
+import { DollarSign, TrendingDown, Server, Cloud, ExternalLink, BadgeIcon } from 'lucide-react'
 import { ClientNav } from "@/components/client-nav"
 import { getUserWithCompany } from "@/lib/auth-utils"
 import { RegistrationIncompleteBanner } from "@/components/registration-incomplete-banner"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+
+const AVAILABLE_PROVIDERS = [
+  {
+    id: "digitalocean",
+    name: "DigitalOcean",
+    description: "Monitor your DigitalOcean droplets, databases, and services",
+    logo: "🌊",
+  },
+  {
+    id: "aws",
+    name: "Amazon Web Services",
+    description: "Track costs across EC2, S3, RDS, and other AWS services",
+    logo: "☁️",
+    comingSoon: true,
+  },
+  {
+    id: "azure",
+    name: "Microsoft Azure",
+    description: "Monitor Azure compute, storage, and database costs",
+    logo: "🔷",
+    comingSoon: true,
+  },
+]
 
 export default async function ClientDashboard() {
   const supabase = await createClient()
@@ -119,6 +142,68 @@ export default async function ClientDashboard() {
           <div>
             <h1 className="text-3xl font-bold text-white">Dashboard</h1>
             <p className="text-slate-400 mt-2">Welcome back, {profile.full_name || "User"}</p>
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <Cloud className="h-5 w-5" />
+            Select a Provider
+          </h2>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {AVAILABLE_PROVIDERS.map((provider) => {
+              const integration = activeIntegrations.find((i) => i.provider === provider.id)
+              const isConnected = !!integration
+
+              return (
+                <Card
+                  key={provider.id}
+                  className={`border-slate-800 bg-slate-900/50 backdrop-blur ${provider.comingSoon ? "opacity-60" : ""}`}
+                >
+                  <CardHeader>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="text-4xl">{provider.logo}</div>
+                      <div>
+                        <CardTitle className="text-white flex items-center gap-2">
+                          {provider.name}
+                          {provider.comingSoon && (
+                            <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+                              Coming Soon
+                            </Badge>
+                          )}
+                          {isConnected && (
+                            <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                              Connected
+                            </Badge>
+                          )}
+                        </CardTitle>
+                      </div>
+                    </div>
+                    <CardDescription className="text-slate-400">{provider.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {provider.comingSoon ? (
+                      <Button disabled className="w-full bg-slate-800/50 text-slate-500 cursor-not-allowed">
+                        Under Development
+                      </Button>
+                    ) : isConnected ? (
+                      <Link href={`/dashboard/${provider.id}`}>
+                        <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Dashboard
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link href="/dashboard/integrations">
+                        <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white">
+                          Connect Provider
+                        </Button>
+                      </Link>
+                    )}
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </div>
 
