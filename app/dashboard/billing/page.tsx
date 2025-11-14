@@ -137,7 +137,7 @@ export default async function BillingPage() {
       description: "For growing companies with significant cloud usage",
       price: "$99.90",
       priceSubtext: "/month",
-      badge: "Most Popular",
+      badge: "Coming Soon",
       features: [
         "Up to $250K monthly cloud spend",
         "10 cloud accounts",
@@ -146,9 +146,10 @@ export default async function BillingPage() {
         "Custom budget alerts",
         "Priority support"
       ],
-      buttonText: "Upgrade to Professional",
+      buttonText: "Coming Soon",
       buttonVariant: "default" as const,
-      highlighted: true
+      highlighted: true,
+      disabled: true
     }
   ]
 
@@ -236,6 +237,13 @@ export default async function BillingPage() {
                       className="w-full bg-slate-800 hover:bg-slate-700 text-white"
                     >
                       Downgrade to Trial
+                    </Button>
+                  ) : plan.disabled ? (
+                    <Button 
+                      disabled
+                      className="w-full bg-slate-800 text-slate-500"
+                    >
+                      Coming Soon
                     </Button>
                   ) : (
                     <CheckoutButton 

@@ -241,7 +241,7 @@ export default function HomePage() {
           {/* Professional Plan */}
           <Card className="border-indigo-600 bg-gradient-to-b from-indigo-900/50 to-slate-900/50 backdrop-blur relative">
             <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <Badge className="bg-indigo-600 text-white border-indigo-500">Most Popular</Badge>
+              <Badge className="bg-slate-600 text-white border-slate-500">Coming Soon</Badge>
             </div>
             <CardHeader>
               <CardTitle className="text-white">Professional</CardTitle>
@@ -280,8 +280,8 @@ export default function HomePage() {
                   <span className="text-sm text-slate-300">Priority support</span>
                 </li>
               </ul>
-              <Button asChild className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
-                <Link href="/auth/sign-up">Start Free Trial</Link>
+              <Button disabled className="w-full bg-slate-700 text-slate-400">
+                Coming Soon
               </Button>
             </CardContent>
           </Card>
