@@ -15,6 +15,8 @@ import { SyncLogsDialogWrapper } from "@/components/sync-logs-dialog-wrapper"
 import { SyncDataButton } from "@/components/sync-data-button"
 import { MonthlyAverageChart } from "@/components/monthly-average-chart"
 import { FinOpsMetrics } from "@/components/finops-metrics"
+import Link from 'next/link'
+import { Button } from "@/components/ui/button"
 
 export default async function DigitalOceanDashboardPage({
   searchParams,
@@ -41,6 +43,46 @@ export default async function DigitalOceanDashboardPage({
   }
 
   const needsTaxInfo = !company?.cnpj_cpf && !company?.vat_number
+
+  if (needsTaxInfo) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
+        <ClientNav companyName={company?.name} isAdmin={isAdmin} />
+        <main className="container mx-auto px-4 py-8">
+          <Card className="bg-slate-800/50 border-slate-700 max-w-2xl mx-auto mt-20">
+            <CardHeader>
+              <CardTitle className="text-2xl text-white">Complete Company Registration</CardTitle>
+              <CardDescription className="text-slate-400">
+                Access to billing data and cost analytics is restricted until your company registration is complete.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-slate-300">
+                {isAdmin ? (
+                  <>
+                    As a company administrator, you need to complete the company registration by providing required tax information before accessing cost analytics.
+                  </>
+                ) : (
+                  <>
+                    Your company administrator needs to complete the company registration before you can access cost analytics. Please contact your administrator to complete the setup.
+                  </>
+                )}
+              </p>
+              {isAdmin && (
+                <div className="flex gap-3 pt-4">
+                  <Link href="/dashboard/settings">
+                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                      Complete Registration
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    )
+  }
 
   const { data: integration, error: integrationError } = await supabase
     .from("cloud_integrations")
