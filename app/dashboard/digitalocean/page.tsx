@@ -231,7 +231,10 @@ export default async function DigitalOceanDashboardPage({
         {/* Resource Breakdown and Recommendations */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <DigitalOceanResourceBreakdown resourceCosts={displayProducts} />
-          <DigitalOceanRecommendations recommendations={recommendations || []} />
+          <DigitalOceanRecommendations 
+            integrationId={integration.id} 
+            timeRange={Number.parseInt(timeRange)}
+          />
         </div>
       </main>
 
