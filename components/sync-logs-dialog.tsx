@@ -60,8 +60,8 @@ export function SyncLogsDialog({ logs, isOpen, onClose }: SyncLogsDialogProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] bg-slate-900 border-slate-700">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl max-h-[85vh] bg-slate-900 border-slate-700">
         <DialogHeader>
           <DialogTitle className="text-xl text-white flex items-center gap-2">
             <FileText className="w-5 h-5" />
@@ -72,7 +72,7 @@ export function SyncLogsDialog({ logs, isOpen, onClose }: SyncLogsDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[500px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[600px]">
           {/* Logs List */}
           <ScrollArea className="h-full pr-4">
             <div className="space-y-2">
@@ -123,7 +123,7 @@ export function SyncLogsDialog({ logs, isOpen, onClose }: SyncLogsDialogProps) {
             </div>
           </ScrollArea>
 
-          {/* Log Details - Removed sync details section */}
+          {/* Log Details */}
           <ScrollArea className="h-full border-l border-slate-700 pl-4">
             {selectedLog ? (
               <div className="space-y-4">
