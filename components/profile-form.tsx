@@ -20,7 +20,6 @@ export function ProfileForm({ profile, user }: ProfileFormProps) {
   const [formData, setFormData] = useState({
     name: profile.full_name || "",
     email: user.email || "",
-    phone: profile.phone || "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,7 +33,6 @@ export function ProfileForm({ profile, user }: ProfileFormProps) {
         body: JSON.stringify({
           userId: user.id,
           name: formData.name,
-          phone: formData.phone,
         }),
       })
 
@@ -87,17 +85,6 @@ export function ProfileForm({ profile, user }: ProfileFormProps) {
         <p className="text-xs text-slate-500">Email cannot be changed</p>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="phone" className="text-slate-300">Phone Number</Label>
-        <Input
-          id="phone"
-          type="tel"
-          value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-          className="bg-slate-800 border-slate-700 text-white"
-          placeholder="+1 (555) 000-0000"
-        />
-      </div>
 
       <Button
         type="submit"

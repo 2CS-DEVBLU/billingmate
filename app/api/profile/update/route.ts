@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, name, phone } = await request.json()
+    const { userId, name } = await request.json()
 
     const supabase = await createClient()
 
@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
       .from("profiles")
       .update({
         full_name: name,
-        phone,
         updated_at: new Date().toISOString(),
       })
       .eq("id", userId)
