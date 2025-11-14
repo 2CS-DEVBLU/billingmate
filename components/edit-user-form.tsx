@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -228,7 +228,7 @@ export function EditUserForm({ user, companies, companyId }: EditUserFormProps) 
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-700">
-              <SelectItem value="administrator" className="text-white">
+              <SelectItem value="admin" className="text-white">
                 Administrator
               </SelectItem>
               <SelectItem value="viewer" className="text-white">
