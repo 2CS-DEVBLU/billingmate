@@ -11,6 +11,8 @@ import { CheckoutButton } from "@/components/checkout-button"
 export default async function BillingPage() {
   const supabase = await createClient()
 
+  console.log("[v0] Billing Page - Loading")
+
   // Check if user is authenticated
   const {
     data: { user },
@@ -19,11 +21,16 @@ export default async function BillingPage() {
     redirect("/auth/login")
   }
 
-  // Get user profile
-  const { data: profile } = await supabase.from("profiles").select("*, companies(*)").eq("id", user.id).single()
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("*, companies!profiles_company_id_fkey(*)")
+    .eq("id", user.id)
+    .single()
+
+  console.log("[v0] Billing Page - Profile:", profile?.email, "Company:", profile?.company_id, "Error:", profileError?.message)
 
   if (!profile || !profile.company_id) {
-    redirect("/auth/login")
+    redirect("/dashboard/settings")
   }
 
   const { data: company } = await supabase
