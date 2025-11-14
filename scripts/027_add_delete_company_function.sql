@@ -18,7 +18,7 @@ DECLARE
   v_integrations_count INT;
   v_subscriptions_count INT;
   v_profiles_count INT;
-  v_company_deleted BOOLEAN;
+  v_company_count INT;
 BEGIN
   -- Get company name for logging
   SELECT name INTO v_company_name FROM companies WHERE id = p_company_id;
@@ -87,8 +87,9 @@ BEGIN
   GET DIAGNOSTICS v_profiles_count = ROW_COUNT;
   
   -- 13. Delete the company itself
+  -- Fixed syntax error - use ROW_COUNT instead of FOUND
   DELETE FROM companies WHERE id = p_company_id;
-  GET DIAGNOSTICS v_company_deleted = FOUND;
+  GET DIAGNOSTICS v_company_count = ROW_COUNT;
   
   -- Build response
   v_deleted_counts := json_build_object(
@@ -107,7 +108,7 @@ BEGIN
       'integrations', v_integrations_count,
       'subscriptions', v_subscriptions_count,
       'profiles', v_profiles_count,
-      'company', CASE WHEN v_company_deleted THEN 1 ELSE 0 END
+      'company', v_company_count
     )
   );
   
