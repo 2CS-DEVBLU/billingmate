@@ -11,9 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { TrendingDown, LayoutDashboard, Settings, LogOut, CreditCard, User, Building } from 'lucide-react'
+import { TrendingDown, LayoutDashboard, Settings, LogOut, CreditCard, User, Building, UserPlus } from 'lucide-react'
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from 'next/navigation'
+import { InviteUserDialog } from '@/components/invite-user-dialog'
+import { useState } from 'react'
 
 interface ClientNavProps {
   companyName?: string
@@ -23,6 +25,7 @@ interface ClientNavProps {
 export function ClientNav({ companyName, isAdmin = false }: ClientNavProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -95,12 +98,21 @@ export function ClientNav({ companyName, isAdmin = false }: ClientNavProps) {
                 </Link>
               </DropdownMenuItem>
               {isAdmin && (
-                <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer">
-                  <Link href="/dashboard/settings" className="flex items-center">
-                    <Building className="h-4 w-4 mr-2" />
-                    Company Settings
-                  </Link>
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer">
+                    <Link href="/dashboard/settings" className="flex items-center">
+                      <Building className="h-4 w-4 mr-2" />
+                      Company Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => setInviteDialogOpen(true)}
+                    className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Invite Users
+                  </DropdownMenuItem>
+                </>
               )}
               <DropdownMenuSeparator className="bg-slate-800" />
               <DropdownMenuItem 
@@ -114,6 +126,13 @@ export function ClientNav({ companyName, isAdmin = false }: ClientNavProps) {
           </DropdownMenu>
         </div>
       </div>
+      
+      {isAdmin && (
+        <InviteUserDialog 
+          open={inviteDialogOpen} 
+          onOpenChange={setInviteDialogOpen}
+        />
+      )}
     </header>
   )
 }
