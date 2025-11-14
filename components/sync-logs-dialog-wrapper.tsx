@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { SyncLogsDialog } from "./sync-logs-dialog"
 import { Button } from "./ui/button"
-import { FileText } from "lucide-react"
+import { FileText } from 'lucide-react'
 
 interface SyncLog {
   id: string
@@ -20,6 +20,8 @@ interface SyncLog {
 
 export function SyncLogsDialogWrapper({ logs }: { logs: SyncLog[] }) {
   const [isOpen, setIsOpen] = useState(false)
+  
+  const recentLogs = logs.slice(0, 5)
 
   return (
     <>
@@ -29,10 +31,10 @@ export function SyncLogsDialogWrapper({ logs }: { logs: SyncLog[] }) {
         onClick={() => setIsOpen(true)}
       >
         <FileText className="w-4 h-4 mr-2" />
-        View Sync Logs ({logs.length})
+        View Sync Logs ({recentLogs.length})
       </Button>
 
-      <SyncLogsDialog logs={logs} isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <SyncLogsDialog logs={recentLogs} isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   )
 }

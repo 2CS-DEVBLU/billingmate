@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { FileText, CheckCircle, XCircle, AlertCircle, Clock } from "lucide-react"
+import { FileText, CheckCircle, XCircle, AlertCircle, Clock } from 'lucide-react'
 
 interface SyncLog {
   id: string
@@ -65,10 +65,10 @@ export function SyncLogsDialog({ logs, isOpen, onClose }: SyncLogsDialogProps) {
         <DialogHeader>
           <DialogTitle className="text-xl text-white flex items-center gap-2">
             <FileText className="w-5 h-5" />
-            Sync History & Logs
+            Recent Sync History
           </DialogTitle>
           <DialogDescription className="text-slate-400">
-            View detailed logs of all data synchronization attempts
+            View the last 5 data synchronization attempts
           </DialogDescription>
         </DialogHeader>
 
@@ -123,7 +123,7 @@ export function SyncLogsDialog({ logs, isOpen, onClose }: SyncLogsDialogProps) {
             </div>
           </ScrollArea>
 
-          {/* Log Details */}
+          {/* Log Details - Removed sync details section */}
           <ScrollArea className="h-full border-l border-slate-700 pl-4">
             {selectedLog ? (
               <div className="space-y-4">
@@ -161,17 +161,6 @@ export function SyncLogsDialog({ logs, isOpen, onClose }: SyncLogsDialogProps) {
                     <h3 className="text-sm font-medium text-red-400 mb-2">Error Message</h3>
                     <div className="p-3 bg-red-900/20 border border-red-700 rounded text-sm text-red-300">
                       {selectedLog.error_message}
-                    </div>
-                  </div>
-                )}
-
-                {selectedLog.sync_details && (
-                  <div>
-                    <h3 className="text-sm font-medium text-slate-400 mb-2">Sync Details</h3>
-                    <div className="p-3 bg-slate-800/50 border border-slate-700 rounded">
-                      <pre className="text-xs text-slate-300 overflow-auto">
-                        {JSON.stringify(selectedLog.sync_details, null, 2)}
-                      </pre>
                     </div>
                   </div>
                 )}

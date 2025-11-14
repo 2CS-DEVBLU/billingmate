@@ -18,7 +18,10 @@ export function MonthlyAverageChart({ billingHistory }: MonthlyAverageChartProps
     .slice()
     .reverse()
     .map((record) => ({
-      month: new Date(record.billing_period).toLocaleDateString("en-US", { month: "short", year: "2-digit" }),
+      month: new Date(record.billing_period).toLocaleDateString("en-US", { 
+        month: "long", 
+        year: "numeric" 
+      }),
       cost: Number(record.total_cost.toFixed(2)),
     }))
 
@@ -39,7 +42,14 @@ export function MonthlyAverageChart({ billingHistory }: MonthlyAverageChartProps
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="month" stroke="#94a3b8" />
+            <XAxis 
+              dataKey="month" 
+              stroke="#94a3b8"
+              angle={-45}
+              textAnchor="end"
+              height={80}
+              tick={{ fontSize: 12 }}
+            />
             <YAxis stroke="#94a3b8" />
             <Tooltip
               contentStyle={{
