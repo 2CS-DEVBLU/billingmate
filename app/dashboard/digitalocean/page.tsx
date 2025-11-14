@@ -42,6 +42,15 @@ export default async function DigitalOceanDashboardPage({
     redirect("/auth/login")
   }
 
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("plan_type, max_analysis_months")
+    .eq("company_id", profile.company_id)
+    .maybeSingle()
+
+  const planType = subscription?.plan_type || "trial"
+  const maxAnalysisMonths = subscription?.max_analysis_months || 3
+
   const needsTaxInfo = !company?.cnpj_cpf && !company?.vat_number
 
   if (needsTaxInfo) {
@@ -183,7 +192,7 @@ export default async function DigitalOceanDashboardPage({
           </div>
 
           <div className="flex gap-3 items-center">
-            <TimeRangeSelector currentRange={timeRange} />
+            <TimeRangeSelector currentRange={timeRange} maxMonths={maxAnalysisMonths} />
             <SyncDataButton integrationId={integration.id} canSync={canSync} cooldownRemaining={cooldownRemaining} />
           </div>
         </div>

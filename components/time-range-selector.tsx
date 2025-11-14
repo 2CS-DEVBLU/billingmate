@@ -1,14 +1,15 @@
 "use client"
 
-import { useRouter, usePathname, useSearchParams } from "next/navigation"
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "lucide-react"
+import { Calendar, Lock } from 'lucide-react'
 
 interface TimeRangeSelectorProps {
   currentRange: string
+  maxMonths?: number
 }
 
-export function TimeRangeSelector({ currentRange }: TimeRangeSelectorProps) {
+export function TimeRangeSelector({ currentRange, maxMonths = 12 }: TimeRangeSelectorProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -18,6 +19,8 @@ export function TimeRangeSelector({ currentRange }: TimeRangeSelectorProps) {
     params.set("timeRange", value)
     router.push(`${pathname}?${params.toString()}`)
   }
+
+  const can12Months = maxMonths >= 12
 
   return (
     <div className="flex items-center gap-2">
@@ -36,8 +39,15 @@ export function TimeRangeSelector({ currentRange }: TimeRangeSelectorProps) {
           <SelectItem value="6" className="text-white hover:bg-slate-700">
             Last 6 Months
           </SelectItem>
-          <SelectItem value="12" className="text-white hover:bg-slate-700">
-            Last 12 Months
+          <SelectItem 
+            value="12" 
+            className="text-white hover:bg-slate-700"
+            disabled={!can12Months}
+          >
+            <div className="flex items-center gap-2">
+              Last 12 Months
+              {!can12Months && <Lock className="h-3 w-3 text-slate-500" />}
+            </div>
           </SelectItem>
         </SelectContent>
       </Select>
