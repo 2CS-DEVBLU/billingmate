@@ -11,15 +11,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { TrendingDown, LayoutDashboard, Settings, LogOut, CreditCard, User } from 'lucide-react'
+import { TrendingDown, LayoutDashboard, Settings, LogOut, CreditCard, User, Building } from 'lucide-react'
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from 'next/navigation'
 
 interface ClientNavProps {
   companyName?: string
+  isAdmin?: boolean
 }
 
-export function ClientNav({ companyName }: ClientNavProps) {
+export function ClientNav({ companyName, isAdmin = false }: ClientNavProps) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -58,20 +59,22 @@ export function ClientNav({ companyName }: ClientNavProps) {
                 Dashboard
               </Link>
             </Button>
-            <Button
-              variant={pathname === "/dashboard/billing" ? "secondary" : "ghost"}
-              asChild
-              className={
-                pathname === "/dashboard/billing"
-                  ? "bg-slate-800 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-              }
-            >
-              <Link href="/dashboard/billing">
-                <CreditCard className="h-4 w-4 mr-2" />
-                Billing
-              </Link>
-            </Button>
+            {isAdmin && (
+              <Button
+                variant={pathname === "/dashboard/billing" ? "secondary" : "ghost"}
+                asChild
+                className={
+                  pathname === "/dashboard/billing"
+                    ? "bg-slate-800 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                }
+              >
+                <Link href="/dashboard/billing">
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Billing
+                </Link>
+              </Button>
+            )}
           </nav>
         </div>
 
@@ -91,12 +94,14 @@ export function ClientNav({ companyName }: ClientNavProps) {
                   My Profile
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer">
-                <Link href="/dashboard/settings" className="flex items-center">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Company Settings
-                </Link>
-              </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer">
+                  <Link href="/dashboard/settings" className="flex items-center">
+                    <Building className="h-4 w-4 mr-2" />
+                    Company Settings
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator className="bg-slate-800" />
               <DropdownMenuItem 
                 onClick={handleSignOut}
