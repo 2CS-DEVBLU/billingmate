@@ -9,14 +9,15 @@ interface CheckoutButtonProps {
   productId: string
   companyId: string
   userId: string
+  className?: string
 }
 
-export function CheckoutButton({ productId, companyId, userId }: CheckoutButtonProps) {
+export function CheckoutButton({ productId, companyId, userId, className }: CheckoutButtonProps) {
   const [showCheckout, setShowCheckout] = useState(false)
 
   return (
     <>
-      <Button onClick={() => setShowCheckout(true)} className="w-full bg-indigo-600 hover:bg-indigo-700">
+      <Button onClick={() => setShowCheckout(true)} className={className || "w-full bg-indigo-600 hover:bg-indigo-700"}>
         Subscribe Now
       </Button>
 

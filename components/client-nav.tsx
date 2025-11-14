@@ -1,11 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
-import { TrendingDown, LayoutDashboard, Settings, LogOut, CreditCard } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { TrendingDown, LayoutDashboard, Settings, LogOut, CreditCard, User } from 'lucide-react'
 import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 
 interface ClientNavProps {
   companyName?: string
@@ -68,17 +76,37 @@ export function ClientNav({ companyName }: ClientNavProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800/50">
-            <Settings className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={handleSignOut}
-            className="text-slate-400 hover:text-white hover:bg-slate-800/50"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800/50">
+                <Settings className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-slate-900 border-slate-800">
+              <DropdownMenuLabel className="text-slate-300">Account Settings</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-slate-800" />
+              <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer">
+                <Link href="/dashboard/profile" className="flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  My Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer">
+                <Link href="/dashboard/settings" className="flex items-center">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Company Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-slate-800" />
+              <DropdownMenuItem 
+                onClick={handleSignOut}
+                className="text-red-400 focus:bg-slate-800 focus:text-red-300 cursor-pointer"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
