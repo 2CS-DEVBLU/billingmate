@@ -151,16 +151,12 @@ export async function POST(request: NextRequest) {
             billing_history_id: billingHistory.id,
             resource_type: resource.resource_type,
             resource_id: resource.resource_id,
-            resource_name: resource.product || resource.product_name || resource.description || 'Unknown Product',
+            resource_name: resource.resource_name, // Already contains the description from DO API
             cost: resource.cost,
             usage_hours: resource.usage_hours,
             region: resource.region,
             size_slug: resource.size_slug,
-            metadata: {
-              product: resource.product || resource.product_name,
-              description: resource.description,
-              ...resource.metadata,
-            },
+            metadata: resource.metadata || {}, // Use existing metadata from DO API
           }))
 
           const { error: rcError } = await supabase.from("resource_costs").insert(resourceCosts)
