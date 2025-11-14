@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AdminNav } from "@/components/admin-nav"
-import { ArrowLeft, Users, UserPlus, Edit } from 'lucide-react'
+import { ArrowLeft, Users, UserPlus, Edit, Trash2 } from 'lucide-react'
 import Link from "next/link"
+import { DeleteCompanyDialog } from "@/components/delete-company-dialog"
 
 export default async function CompanyDetailPage({ params }: { params: { id: string } }) {
   console.log("[v0] Loading company detail page for ID:", params.id)
@@ -56,6 +57,16 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
     adminUser = admin
   }
 
+  const { count: userCount } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .eq("company_id", params.id)
+
+  const { count: integrationCount } = await supabase
+    .from("cloud_integrations")
+    .select("*", { count: "exact", head: true })
+    .eq("company_id", params.id)
+
   const activeSubscription = subscriptions?.[0]
 
   const isIncomplete =
@@ -96,11 +107,19 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
               <h1 className="text-3xl font-bold text-white">{company.name}</h1>
               <p className="text-slate-400 mt-2">Complete company registration and user management</p>
             </div>
-            {isIncomplete && (
-              <Badge variant="outline" className="border-amber-700 text-amber-400 bg-amber-900/20">
-                Incomplete Registration
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {isIncomplete && (
+                <Badge variant="outline" className="border-amber-700 text-amber-400 bg-amber-900/20">
+                  Incomplete Registration
+                </Badge>
+              )}
+              <DeleteCompanyDialog
+                companyId={company.id}
+                companyName={company.name}
+                userCount={userCount || 0}
+                integrationCount={integrationCount || 0}
+              />
+            </div>
           </div>
         </div>
 
@@ -150,12 +169,6 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
                   <p className="text-sm text-slate-400">Country</p>
                   <p className="text-white font-medium">
                     {company.country_code || <span className="text-slate-600">Not provided</span>}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-400">{company.country_code === 'BR' ? 'CNPJ / CPF' : 'VAT / Tax ID'}</p>
-                  <p className="text-white font-medium">
-                    {company.cnpj_cpf || company.vat_number || <span className="text-slate-600">Not provided</span>}
                   </p>
                 </div>
                 <div className="space-y-1 md:col-span-2">
