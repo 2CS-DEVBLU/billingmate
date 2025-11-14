@@ -79,49 +79,26 @@ export default async function DigitalOceanDashboardPage({
     .order("billing_period", { ascending: false })
     .limit(monthsToFetch)
 
-  // Get current month's resource breakdown
-  const currentMonth = billingHistory?.[0]
   let resourceCosts = []
 
-  if (currentMonth) {
-    const { data: costs } = await supabase.from("resource_costs").select("*").eq("billing_history_id", currentMonth.id)
+  if (billingHistory && billingHistory.length > 0) {
+    const billingIds = billingHistory.map(b => b.id)
+    const { data: costs } = await supabase
+      .from("resource_costs")
+      .select("*")
+      .in("billing_history_id", billingIds)
+    
     resourceCosts = costs || []
+    console.log("[v0] Fetched", resourceCosts.length, "resource costs from database")
+    
+    // Debug: Log first resource to see structure
+    if (resourceCosts.length > 0) {
+      console.log("[v0] First resource from DB:", JSON.stringify(resourceCosts[0]))
+    }
   }
 
-  // Extract product info from all billing history raw_data as fallback
-  const productsFromHistory: any[] = []
-  let totalResourceCount = 0
-  
-  billingHistory?.forEach((billing) => {
-    if (billing.raw_data?.resources) {
-      billing.raw_data.resources.forEach((resource: any) => {
-        const productName = resource.product || resource.product_name || resource.description || 'Unknown Product'
-        const productDesc = resource.description || ''
-        
-        console.log('[v0] Processing resource:', { product: resource.product, description: resource.description, amount: resource.cost })
-        
-        productsFromHistory.push({
-          id: resource.resource_id || `item-${resource.product}-${Date.now()}`,
-          resource_name: productName,
-          resource_type: resource.resource_type || 'storage',
-          cost: resource.cost || resource.amount || 0,
-          metadata: {
-            product: resource.product || resource.product_name,
-            description: productDesc,
-            period: billing.billing_period,
-          },
-          region: resource.region || 'N/A',
-          billing_period: billing.billing_period,
-        })
-        totalResourceCount++
-      })
-    }
-  })
-
-  console.log("[v0] Extracted", productsFromHistory.length, "products from billing history")
-  
-  // Use resource_costs if available, otherwise fall back to products from history
-  const displayProducts = resourceCosts.length > 0 ? resourceCosts : productsFromHistory
+  // Use resource_costs directly - they have all the product information
+  const displayProducts = resourceCosts
 
   // Get recommendations
   const { data: recommendations } = await supabase
@@ -139,7 +116,7 @@ export default async function DigitalOceanDashboardPage({
     .limit(50)
 
   // Calculate metrics
-  const currentMonthCost = currentMonth?.total_cost || 0
+  const currentMonthCost = billingHistory?.[0]?.total_cost || 0
   const previousMonth = billingHistory?.[1]
   const previousMonthCost = previousMonth?.total_cost || 0
   const costChange = previousMonthCost > 0 ? ((currentMonthCost - previousMonthCost) / previousMonthCost) * 100 : 0
@@ -148,7 +125,7 @@ export default async function DigitalOceanDashboardPage({
 
   const lastSync = integration.last_sync ? new Date(integration.last_sync).toLocaleString() : "Never"
 
-  console.log("[v0] DigitalOcean Dashboard - Rendering with", billingHistory?.length, "billing records")
+  console.log("[v0] DigitalOcean Dashboard - Rendering with", billingHistory?.length, "billing records and", displayProducts.length, "products")
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
@@ -197,7 +174,7 @@ export default async function DigitalOceanDashboardPage({
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader className="pb-3">
               <CardDescription className="text-slate-400">Active Resources</CardDescription>
-              <CardTitle className="text-3xl text-white">{totalResourceCount}</CardTitle>
+              <CardTitle className="text-3xl text-white">{displayProducts.length}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-slate-400">Tracked across {billingHistory?.length || 0} months</p>
