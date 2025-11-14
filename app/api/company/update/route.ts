@@ -79,7 +79,7 @@ export async function POST(req: Request) {
       .from('companies')
       .select('id, name, street, number, city')
       .eq('id', companyId)
-      .single()
+      .maybeSingle()
     
     console.log('[v0] Existing company before update:', existingCompany)
     console.log('[v0] Fetch error:', fetchError)
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
       .update(updateData)
       .eq('id', companyId)
       .select('id, name, street, number, city, country, cnpj_cpf, vat_number')
-      .single()
+      .maybeSingle()
 
     console.log('[v0] Update result:', updatedData)
     console.log('[v0] Update error:', updateError)
@@ -123,8 +123,15 @@ export async function POST(req: Request) {
     }
 
     if (!updatedData) {
-      console.error('[v0] No data returned from update')
-      return Response.json({ error: 'Update succeeded but no data returned' }, { status: 500 })
+      console.log('[v0] No data returned from update, fetching company')
+      const { data: fetchedData } = await supabase
+        .from('companies')
+        .select('id, name, street, number, city, country, cnpj_cpf, vat_number')
+        .eq('id', companyId)
+        .single()
+      
+      console.log('[v0] Fetched company after update:', fetchedData)
+      return Response.json({ success: true, data: fetchedData || existingCompany })
     }
 
     console.log('[v0] Company updated successfully:', updatedData)
