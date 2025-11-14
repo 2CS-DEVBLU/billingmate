@@ -75,6 +75,20 @@ export async function POST(req: Request) {
 
     console.log('[v0] Authorization passed, updating company')
 
+    const { data: existingCompany, error: fetchError } = await supabase
+      .from('companies')
+      .select('id, name, street, number, city')
+      .eq('id', companyId)
+      .single()
+    
+    console.log('[v0] Existing company before update:', existingCompany)
+    console.log('[v0] Fetch error:', fetchError)
+
+    if (!existingCompany) {
+      console.log('[v0] Company not found in database')
+      return Response.json({ error: 'Company not found' }, { status: 404 })
+    }
+
     const updateData = {
       name,
       country_code,
@@ -97,18 +111,24 @@ export async function POST(req: Request) {
       .from('companies')
       .update(updateData)
       .eq('id', companyId)
-      .select()
+      .select('id, name, street, number, city, country, cnpj_cpf, vat_number')
+      .single()
 
     console.log('[v0] Update result:', updatedData)
     console.log('[v0] Update error:', updateError)
 
     if (updateError) {
       console.error('[v0] Error updating company:', updateError)
-      return Response.json({ error: 'Failed to update company' }, { status: 500 })
+      return Response.json({ error: 'Failed to update company: ' + updateError.message }, { status: 500 })
     }
 
-    console.log('[v0] Company updated successfully')
-    return Response.json({ success: true })
+    if (!updatedData) {
+      console.error('[v0] No data returned from update')
+      return Response.json({ error: 'Update succeeded but no data returned' }, { status: 500 })
+    }
+
+    console.log('[v0] Company updated successfully:', updatedData)
+    return Response.json({ success: true, data: updatedData })
   } catch (error) {
     console.error('[v0] Error in company update:', error)
     return Response.json({ error: 'Internal server error' }, { status: 500 })
