@@ -2,7 +2,21 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(req: Request) {
   try {
-    const { companyId, name, country_code, cnpj_cpf, vat_number, address, industry } = await req.json()
+    const { 
+      companyId, 
+      name, 
+      country_code, 
+      cnpj_cpf, 
+      vat_number, 
+      industry,
+      street,
+      number,
+      zip_code,
+      neighborhood,
+      city,
+      state,
+      country
+    } = await req.json()
 
     const supabase = await createClient()
 
@@ -25,7 +39,6 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Unauthorized to update this company' }, { status: 403 })
     }
 
-    // Update company
     const { error: updateError } = await supabase
       .from('companies')
       .update({
@@ -33,8 +46,14 @@ export async function POST(req: Request) {
         country_code,
         cnpj_cpf: country_code === 'BR' ? cnpj_cpf : null,
         vat_number: country_code !== 'BR' ? vat_number : null,
-        address,
         industry,
+        street,
+        number,
+        zip_code,
+        neighborhood,
+        city,
+        state,
+        country,
         updated_at: new Date().toISOString(),
       })
       .eq('id', companyId)

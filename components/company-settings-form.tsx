@@ -19,6 +19,13 @@ interface CompanySettingsFormProps {
     is_registration_complete: boolean
     address: string | null
     industry: string | null
+    street?: string | null
+    number?: string | null
+    zip_code?: string | null
+    neighborhood?: string | null
+    city?: string | null
+    state?: string | null
+    country?: string | null
   }
 }
 
@@ -33,8 +40,14 @@ export function CompanySettingsForm({ company }: CompanySettingsFormProps) {
     country_code: company.country_code || "BR",
     cnpj_cpf: company.cnpj_cpf || "",
     vat_number: company.vat_number || "",
-    address: company.address || "",
     industry: company.industry || "",
+    street: company.street || "",
+    number: company.number || "",
+    zip_code: company.zip_code || "",
+    neighborhood: company.neighborhood || "",
+    city: company.city || "",
+    state: company.state || "",
+    country: company.country || "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,7 +117,7 @@ export function CompanySettingsForm({ company }: CompanySettingsFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="country" className="text-slate-300">
+            <Label htmlFor="country_code" className="text-slate-300">
               Country
             </Label>
             <Select
@@ -178,17 +191,105 @@ export function CompanySettingsForm({ company }: CompanySettingsFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address" className="text-slate-300">
-              Address
-            </Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="bg-slate-800 border-slate-700 text-white"
-              placeholder="Company address"
-            />
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white">Address Information</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="street" className="text-slate-300">
+                  Street
+                </Label>
+                <Input
+                  id="street"
+                  value={formData.street}
+                  onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                  placeholder="Street name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="number" className="text-slate-300">
+                  Number
+                </Label>
+                <Input
+                  id="number"
+                  value={formData.number}
+                  onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                  placeholder="123"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="zip_code" className="text-slate-300">
+                  Zip Code
+                </Label>
+                <Input
+                  id="zip_code"
+                  value={formData.zip_code}
+                  onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                  placeholder="12345-678"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="neighborhood" className="text-slate-300">
+                  Neighborhood
+                </Label>
+                <Input
+                  id="neighborhood"
+                  value={formData.neighborhood}
+                  onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                  placeholder="District/Neighborhood"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city" className="text-slate-300">
+                  City
+                </Label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                  placeholder="City"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="state" className="text-slate-300">
+                  State
+                </Label>
+                <Input
+                  id="state"
+                  value={formData.state}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                  placeholder="State/Province"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="country" className="text-slate-300">
+                  Country
+                </Label>
+                <Input
+                  id="country"
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                  placeholder="Country"
+                />
+              </div>
+            </div>
           </div>
 
           {error && (
