@@ -8,6 +8,7 @@ import { CloudAccountsCard } from "@/components/cloud-accounts-card"
 import { RecommendationsCard } from "@/components/recommendations-card"
 import { AlertsCard } from "@/components/alerts-card"
 import { ProviderSelector } from "@/components/provider-selector"
+import { getUserWithCompany } from "@/lib/auth-utils"
 
 export default async function ClientDashboard({
   searchParams,
@@ -19,23 +20,13 @@ export default async function ClientDashboard({
 
   console.log("[v0] Dashboard - Loading")
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { user, profile, company, isAdmin } = await getUserWithCompany()
 
   console.log("[v0] Dashboard - User:", user?.email || "none")
 
   if (!user) {
     redirect("/auth/login")
   }
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("*, companies!profiles_company_id_fkey(*)")
-    .eq("id", user.id)
-    .single()
-
-  console.log("[v0] Dashboard - Profile:", profile?.email, "Company:", profile?.company_id, "Error:", profileError)
 
   if (!profile) {
     console.log("[v0] Dashboard - No profile, redirecting to login")
@@ -128,7 +119,7 @@ export default async function ClientDashboard({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-      <ClientNav companyName={profile.companies?.name} />
+      <ClientNav companyName={company?.name} isAdmin={isAdmin} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 flex items-center justify-between">

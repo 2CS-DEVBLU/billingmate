@@ -1,10 +1,12 @@
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
+import { getUserWithCompany } from "@/lib/auth-utils"
 import { ClientNav } from "@/components/client-nav"
+import { RegistrationIncompleteBanner } from "@/components/registration-incomplete-banner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Cloud, Plus, Settings, ExternalLink, Activity } from "lucide-react"
+import { Cloud, Plus, Settings, ExternalLink, Activity } from 'lucide-react'
 import Link from "next/link"
 
 const AVAILABLE_PROVIDERS = [
@@ -45,22 +47,32 @@ const AVAILABLE_PROVIDERS = [
 export default async function IntegrationsPage() {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { user, profile, company, isAdmin } = await getUserWithCompany()
 
   if (!user) {
     redirect("/auth/login")
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*, companies!profiles_company_id_fkey(*)")
-    .eq("id", user.id)
-    .single()
-
   if (!profile || !profile.company_id) {
     redirect("/auth/login")
+  }
+
+  const registrationComplete = company?.is_registration_complete || false
+  const needsTaxInfo = !company?.cnpj_cpf && !company?.vat_number
+
+  if (!isAdmin && !registrationComplete) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
+        <ClientNav companyName={company?.name} isAdmin={isAdmin} />
+        <main className="container mx-auto px-4 py-8">
+          <RegistrationIncompleteBanner 
+            companyName={company?.name} 
+            countryCode={company?.country_code}
+            isAdmin={isAdmin} 
+          />
+        </main>
+      </div>
+    )
   }
 
   const { data: integrations } = await supabase
@@ -73,9 +85,16 @@ export default async function IntegrationsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-      <ClientNav companyName={profile.companies?.name} />
+      <ClientNav companyName={company?.name} isAdmin={isAdmin} />
 
       <main className="container mx-auto px-4 py-8">
+        {isAdmin && needsTaxInfo && (
+          <RegistrationIncompleteBanner 
+            isAdmin={isAdmin}
+            company={company}
+          />
+        )}
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
             <Cloud className="h-8 w-8" />

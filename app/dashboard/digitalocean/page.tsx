@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
+import { getUserWithCompany } from "@/lib/auth-utils"
 import { ClientNav } from "@/components/client-nav"
+import { RegistrationIncompleteBanner } from "@/components/registration-incomplete-banner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { DigitalOceanBillingChart } from "@/components/digitalocean-billing-chart"
@@ -26,9 +28,7 @@ export default async function DigitalOceanDashboardPage({
 
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { user, profile, company, isAdmin } = await getUserWithCompany()
 
   console.log("[v0] DigitalOcean Dashboard - User:", user?.email)
 
@@ -36,17 +36,11 @@ export default async function DigitalOceanDashboardPage({
     redirect("/auth/login")
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*, companies!profiles_company_id_fkey(*)")
-    .eq("id", user.id)
-    .single()
-
-  console.log("[v0] DigitalOcean Dashboard - Profile:", profile?.email, "Company:", profile?.company_id)
-
   if (!profile || !profile.company_id) {
     redirect("/auth/login")
   }
+
+  const needsTaxInfo = !company?.cnpj_cpf && !company?.vat_number
 
   const { data: integration, error: integrationError } = await supabase
     .from("cloud_integrations")
@@ -129,9 +123,16 @@ export default async function DigitalOceanDashboardPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-      <ClientNav companyName={profile.companies?.name} />
+      <ClientNav companyName={company?.name} isAdmin={isAdmin} />
 
       <main className="container mx-auto px-4 py-8">
+        {isAdmin && needsTaxInfo && (
+          <RegistrationIncompleteBanner 
+            isAdmin={isAdmin}
+            company={company}
+          />
+        )}
+
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">DigitalOcean Cost Analytics</h1>
