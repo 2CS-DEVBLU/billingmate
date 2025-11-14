@@ -4,13 +4,22 @@ import { TableBody } from "@/components/ui/table"
 import { TableHead } from "@/components/ui/table"
 import { TableRow } from "@/components/ui/table"
 import { TableHeader } from "@/components/ui/table"
-import { Table } from "@/components/ui/table"
-import { redirect } from "next/navigation"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption
+} from "@/components/ui/table"
+import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AdminNav } from "@/components/admin-nav"
-import { Settings, Eye, Building2, Users } from "lucide-react"
+import { Settings, Eye, Building2, Users } from 'lucide-react'
 import Link from "next/link"
 
 export default async function AdminDashboard() {
@@ -59,7 +68,7 @@ export default async function AdminDashboard() {
           <p className="text-slate-400 mt-2">Manage companies and users in the system</p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 max-w-4xl">
+        <div className="grid gap-6 md:grid-cols-3 max-w-6xl">
           <Card className="border-slate-800 bg-slate-900/50 backdrop-blur hover:bg-slate-900/70 transition-colors">
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -103,6 +112,30 @@ export default async function AdminDashboard() {
                 <Link href="/admin/users">
                   <Users className="h-4 w-4 mr-2" />
                   View All Users
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur hover:bg-slate-900/70 transition-colors">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <Settings className="h-6 w-6 text-emerald-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-white">Platform Settings</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Configure integrations
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Link href="/admin/settings">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Manage Settings
                 </Link>
               </Button>
             </CardContent>
