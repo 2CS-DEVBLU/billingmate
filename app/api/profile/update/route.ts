@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const { error } = await supabase
       .from("profiles")
       .update({
-        name,
+        full_name: name,
         phone,
         updated_at: new Date().toISOString(),
       })

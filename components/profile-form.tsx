@@ -18,7 +18,7 @@ export function ProfileForm({ profile, user }: ProfileFormProps) {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    name: profile.name || "",
+    name: profile.full_name || "",
     email: user.email || "",
     phone: profile.phone || "",
   })
