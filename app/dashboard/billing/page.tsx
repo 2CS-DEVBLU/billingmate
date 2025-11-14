@@ -42,14 +42,13 @@ export default async function BillingPage() {
   const isRegistrationComplete = company?.is_registration_complete || false
   const needsTaxInfo = !company?.cnpj_cpf && !company?.vat_number
 
-  // Get subscription info
   const { data: subscription } = await supabase
     .from("subscriptions")
     .select("*")
     .eq("company_id", profile.company_id)
-    .single()
+    .maybeSingle()
 
-  const currentPlan = subscription?.plan_type || "none"
+  const currentPlan = subscription?.plan_type || "trial"
   
   const { data: billingData } = await supabase
     .from("billing_history")
