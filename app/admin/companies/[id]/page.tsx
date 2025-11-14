@@ -1,0 +1,204 @@
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { AdminNav } from "@/components/admin-nav"
+import { ArrowLeft, Users, UserPlus, Edit } from "lucide-react"
+import Link from "next/link"
+
+export default async function CompanyDetailPage({ params }: { params: { id: string } }) {
+  console.log("[v0] Loading company detail page for ID:", params.id)
+
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/auth/login")
+  }
+
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+
+  if (profile?.role !== "admin") {
+    redirect("/dashboard")
+  }
+
+  const { data: company, error: companyError } = await supabase
+    .from("companies")
+    .select("*")
+    .eq("id", params.id)
+    .single()
+
+  console.log("[v0] Company data:", company)
+  console.log("[v0] Company error:", companyError)
+
+  if (!company || companyError) {
+    console.log("[v0] Company not found, redirecting")
+    redirect("/admin/companies")
+  }
+
+  const { data: subscriptions } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq("company_id", params.id)
+    .eq("status", "active")
+
+  let adminUser = null
+  if (company.admin_user_id) {
+    const { data: admin } = await supabase
+      .from("profiles")
+      .select("id, full_name, email")
+      .eq("id", company.admin_user_id)
+      .single()
+    adminUser = admin
+  }
+
+  const activeSubscription = subscriptions?.[0]
+
+  const isIncomplete =
+    !company.name ||
+    !company.company_size ||
+    !company.address ||
+    !company.area_of_operation ||
+    !company.cnpj_cpf ||
+    !company.admin_user_id
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
+      <AdminNav />
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Button variant="ghost" asChild className="text-slate-400 hover:text-white mb-4">
+            <Link href="/admin/companies">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Companies
+            </Link>
+          </Button>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white">{company.name}</h1>
+              <p className="text-slate-400 mt-2">Complete company registration and user management</p>
+            </div>
+            {isIncomplete && (
+              <Badge variant="outline" className="border-amber-700 text-amber-400 bg-amber-900/20">
+                Incomplete Registration
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        <div className="grid gap-6">
+          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-white">Company Registration</CardTitle>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="border-indigo-700 text-indigo-400 hover:bg-indigo-900/30 bg-transparent"
+              >
+                <Link href={`/admin/companies/${company.id}/edit`}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Data
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <p className="text-sm text-slate-400">Company Name</p>
+                  <p className="text-white font-medium">
+                    {company.name || <span className="text-slate-600">Not provided</span>}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-slate-400">Company Size</p>
+                  <p className="text-white font-medium">
+                    {company.company_size || <span className="text-slate-600">Not provided</span>}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-slate-400">Industry</p>
+                  <p className="text-white font-medium">
+                    {company.industry || <span className="text-slate-600">Not provided</span>}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-slate-400">Area of Operation</p>
+                  <p className="text-white font-medium">
+                    {company.area_of_operation || <span className="text-slate-600">Not provided</span>}
+                  </p>
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <p className="text-sm text-slate-400">Address</p>
+                  <p className="text-white font-medium">
+                    {company.address || <span className="text-slate-600">Not provided</span>}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-slate-400">CNPJ / CPF</p>
+                  <p className="text-white font-medium">
+                    {company.cnpj_cpf || <span className="text-slate-600">Not provided</span>}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-slate-400">Administrator User</p>
+                  {adminUser ? (
+                    <div>
+                      <p className="text-white font-medium">{adminUser.full_name}</p>
+                      <p className="text-sm text-slate-500">{adminUser.email}</p>
+                    </div>
+                  ) : (
+                    <p className="text-slate-600">Not assigned</p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-slate-400">Contracted Plan</p>
+                  {activeSubscription ? (
+                    <Badge className="bg-green-900/30 border-green-700 text-green-400">
+                      {activeSubscription.plan_type}
+                    </Badge>
+                  ) : (
+                    <p className="text-slate-600">No active plan</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-white">Users</CardTitle>
+                  <p className="text-slate-400 text-sm mt-1">Manage users and access permissions for this company</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Link href={`/admin/companies/${company.id}/users/new`}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Create User
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="border-indigo-700 text-indigo-400 hover:bg-indigo-900/30 bg-transparent"
+                  >
+                    <Link href={`/admin/companies/${company.id}/users`}>
+                      <Users className="h-4 w-4 mr-2" />
+                      View Users
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+        </div>
+      </main>
+    </div>
+  )
+}

@@ -1,0 +1,260 @@
+import { redirect } from 'next/navigation'
+import { createClient } from "@/lib/supabase/server"
+import { ClientNav } from "@/components/client-nav"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { DigitalOceanBillingChart } from "@/components/digitalocean-billing-chart"
+import { DigitalOceanResourceBreakdown } from "@/components/digitalocean-resource-breakdown"
+import { DigitalOceanRecommendations } from "@/components/digitalocean-recommendations"
+import { DigitalOceanProductsList } from "@/components/digitalocean-products-list"
+import { TopResourceConsumers } from "@/components/top-resource-consumers"
+import { TimeRangeSelector } from "@/components/time-range-selector"
+import { SyncLogsDialogWrapper } from "@/components/sync-logs-dialog-wrapper"
+import { SyncDataButton } from "@/components/sync-data-button"
+import { MonthlyAverageChart } from "@/components/monthly-average-chart"
+import { FinOpsMetrics } from "@/components/finops-metrics"
+
+export default async function DigitalOceanDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ timeRange?: string }>
+}) {
+  console.log("[v0] DigitalOcean Dashboard - Loading")
+
+  const params = await searchParams
+  const timeRange = params.timeRange || "1"
+
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  console.log("[v0] DigitalOcean Dashboard - User:", user?.email)
+
+  if (!user) {
+    redirect("/auth/login")
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*, companies!profiles_company_id_fkey(*)")
+    .eq("id", user.id)
+    .single()
+
+  console.log("[v0] DigitalOcean Dashboard - Profile:", profile?.email, "Company:", profile?.company_id)
+
+  if (!profile || !profile.company_id) {
+    redirect("/auth/login")
+  }
+
+  const { data: integration, error: integrationError } = await supabase
+    .from("cloud_integrations")
+    .select("*")
+    .eq("company_id", profile.company_id)
+    .eq("provider", "digitalocean")
+    .single()
+
+  console.log("[v0] DigitalOcean Dashboard - Integration:", integration?.id, "Error:", integrationError)
+
+  if (!integration) {
+    redirect("/dashboard/integrations")
+  }
+
+  // Calculate cooldown remaining
+  const lastManualSync = integration.last_manual_sync ? new Date(integration.last_manual_sync) : null
+  const now = new Date()
+  const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000)
+  const canSync = !lastManualSync || lastManualSync < fiveMinutesAgo
+  const cooldownRemaining =
+    lastManualSync && lastManualSync >= fiveMinutesAgo
+      ? Math.ceil((lastManualSync.getTime() + 5 * 60 * 1000 - now.getTime()) / 1000)
+      : 0
+
+  const monthsToFetch = Number.parseInt(timeRange)
+  const { data: billingHistory } = await supabase
+    .from("billing_history")
+    .select("*")
+    .eq("integration_id", integration.id)
+    .order("billing_period", { ascending: false })
+    .limit(monthsToFetch)
+
+  // Get current month's resource breakdown
+  const currentMonth = billingHistory?.[0]
+  let resourceCosts = []
+
+  if (currentMonth) {
+    const { data: costs } = await supabase.from("resource_costs").select("*").eq("billing_history_id", currentMonth.id)
+    resourceCosts = costs || []
+  }
+
+  // Extract product info from all billing history raw_data as fallback
+  const productsFromHistory: any[] = []
+  let totalResourceCount = 0
+  
+  billingHistory?.forEach((billing) => {
+    if (billing.raw_data?.resources) {
+      billing.raw_data.resources.forEach((resource: any) => {
+        productsFromHistory.push({
+          id: resource.resource_id || `${resource.product_name}-${billing.billing_period}`,
+          resource_name: resource.product_name || resource.description || 'Unknown Product',
+          resource_type: resource.resource_type || 'unknown',
+          cost: resource.cost || 0,
+          metadata: {
+            product: resource.product_name,
+            description: resource.description,
+            period: billing.billing_period,
+          },
+          region: resource.region || 'N/A',
+          billing_period: billing.billing_period,
+        })
+        totalResourceCount++
+      })
+    }
+  })
+
+  console.log("[v0] Extracted", productsFromHistory.length, "products from billing history")
+  
+  // Use resource_costs if available, otherwise fall back to products from history
+  const displayProducts = resourceCosts.length > 0 ? resourceCosts : productsFromHistory
+
+  // Get recommendations
+  const { data: recommendations } = await supabase
+    .from("recommendations")
+    .select("*")
+    .eq("cloud_account_id", integration.id)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+
+  const { data: syncLogs } = await supabase
+    .from("sync_logs")
+    .select("*")
+    .eq("integration_id", integration.id)
+    .order("started_at", { ascending: false })
+    .limit(50)
+
+  // Calculate metrics
+  const currentMonthCost = currentMonth?.total_cost || 0
+  const previousMonth = billingHistory?.[1]
+  const previousMonthCost = previousMonth?.total_cost || 0
+  const costChange = previousMonthCost > 0 ? ((currentMonthCost - previousMonthCost) / previousMonthCost) * 100 : 0
+
+  const totalPotentialSavings = recommendations?.reduce((sum, rec) => sum + (rec.potential_savings || 0), 0) || 0
+
+  const lastSync = integration.last_sync ? new Date(integration.last_sync).toLocaleString() : "Never"
+
+  console.log("[v0] DigitalOcean Dashboard - Rendering with", billingHistory?.length, "billing records")
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
+      <ClientNav companyName={profile.companies?.name} />
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">DigitalOcean Cost Analytics</h1>
+            <p className="text-slate-400">Comprehensive billing analysis and optimization recommendations</p>
+            <p className="text-sm text-slate-500 mt-1">Last sync: {lastSync}</p>
+          </div>
+
+          <div className="flex gap-3 items-center">
+            <TimeRangeSelector currentRange={timeRange} />
+            <SyncDataButton integrationId={integration.id} canSync={canSync} cooldownRemaining={cooldownRemaining} />
+          </div>
+        </div>
+
+        {!canSync && (
+          <div className="mb-6 p-3 bg-yellow-900/20 border border-yellow-700 rounded-lg">
+            <p className="text-sm text-yellow-400">
+              Manual sync is on cooldown. Please wait {Math.floor(cooldownRemaining / 60)} minutes and{" "}
+              {cooldownRemaining % 60} seconds before syncing again.
+            </p>
+          </div>
+        )}
+
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader className="pb-3">
+              <CardDescription className="text-slate-400">Current Month Spend</CardDescription>
+              <CardTitle className="text-3xl text-white">${currentMonthCost.toFixed(2)}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {costChange !== 0 && (
+                <Badge variant={costChange > 0 ? "destructive" : "default"} className="text-xs">
+                  {costChange > 0 ? "+" : ""}
+                  {costChange.toFixed(1)}% vs last month
+                </Badge>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader className="pb-3">
+              <CardDescription className="text-slate-400">Active Resources</CardDescription>
+              <CardTitle className="text-3xl text-white">{totalResourceCount}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-slate-400">Tracked across {billingHistory?.length || 0} months</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader className="pb-3">
+              <CardDescription className="text-slate-400">Potential Savings</CardDescription>
+              <CardTitle className="text-3xl text-green-400">${totalPotentialSavings.toFixed(2)}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-slate-400">{recommendations?.length || 0} recommendations</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* FinOps Metrics section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-white mb-4">FinOps Key Metrics</h2>
+          <FinOpsMetrics billingHistory={billingHistory || []} />
+        </div>
+
+        <div className="mb-8">
+          <MonthlyAverageChart billingHistory={billingHistory || []} />
+        </div>
+
+        {/* Original billing trend chart */}
+        <div className="mb-8">
+          <DigitalOceanBillingChart billingHistory={billingHistory || []} />
+        </div>
+
+        {displayProducts.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <DigitalOceanProductsList resourceCosts={displayProducts} />
+            <TopResourceConsumers resourceCosts={displayProducts} />
+          </div>
+        ) : (
+          <Card className="bg-slate-800/50 border-slate-700 mb-8">
+            <CardHeader>
+              <CardTitle className="text-white">Resource Details</CardTitle>
+              <CardDescription className="text-slate-400">
+                No detailed resource data available yet. Sync your account to fetch resource information.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-slate-400">
+                Resource-level cost breakdown will appear here after your first successful sync with DigitalOcean API.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Resource Breakdown and Recommendations */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <DigitalOceanResourceBreakdown resourceCosts={displayProducts} />
+          <DigitalOceanRecommendations recommendations={recommendations || []} />
+        </div>
+      </main>
+
+      {/* Sync Logs Dialog */}
+      <SyncLogsDialogWrapper logs={syncLogs || []} />
+    </div>
+  )
+}
