@@ -72,28 +72,35 @@ export async function POST(req: Request) {
       console.log('[v0] User not authorized - not admin')
       return Response.json({ error: 'Only administrators can update company settings' }, { status: 403 })
     }
-    // </CHANGE>
 
     console.log('[v0] Authorization passed, updating company')
 
-    const { error: updateError } = await supabase
+    const updateData = {
+      name,
+      country_code,
+      cnpj_cpf: country_code === 'BR' ? cnpj_cpf : null,
+      vat_number: country_code !== 'BR' ? vat_number : null,
+      industry,
+      street,
+      number,
+      zip_code,
+      neighborhood,
+      city,
+      state,
+      country,
+      updated_at: new Date().toISOString(),
+    }
+    
+    console.log('[v0] Update data being sent:', JSON.stringify(updateData, null, 2))
+
+    const { data: updatedData, error: updateError } = await supabase
       .from('companies')
-      .update({
-        name,
-        country_code,
-        cnpj_cpf: country_code === 'BR' ? cnpj_cpf : null,
-        vat_number: country_code !== 'BR' ? vat_number : null,
-        industry,
-        street,
-        number,
-        zip_code,
-        neighborhood,
-        city,
-        state,
-        country,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', companyId)
+      .select()
+
+    console.log('[v0] Update result:', updatedData)
+    console.log('[v0] Update error:', updateError)
 
     if (updateError) {
       console.error('[v0] Error updating company:', updateError)

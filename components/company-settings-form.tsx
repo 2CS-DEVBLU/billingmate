@@ -74,9 +74,12 @@ export function CompanySettingsForm({ company }: CompanySettingsFormProps) {
         }),
       })
 
+      console.log('[v0] Response status:', response.status)
+      const responseData = await response.json()
+      console.log('[v0] Response data:', responseData)
+
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "Failed to update company")
+        throw new Error(responseData.error || "Failed to update company")
       }
 
       setSuccess(true)
