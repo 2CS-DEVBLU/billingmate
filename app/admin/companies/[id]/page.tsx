@@ -31,7 +31,7 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
     .from("companies")
     .select("*")
     .eq("id", params.id)
-    .single()
+    .maybeSingle()
 
   console.log("[v0] Company data:", company)
   console.log("[v0] Company error:", companyError)
