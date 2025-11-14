@@ -227,7 +227,7 @@ export default async function DigitalOceanDashboardPage({
 
         {displayProducts.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <DigitalOceanProductsList resourceCosts={displayProducts} />
+            <DigitalOceanProductsList resourceCosts={displayProducts} timeRange={timeRange} />
             <TopResourceConsumers resourceCosts={displayProducts} />
           </div>
         ) : (

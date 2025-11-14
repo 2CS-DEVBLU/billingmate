@@ -16,6 +16,7 @@ interface ResourceCost {
 
 interface DigitalOceanProductsListProps {
   resourceCosts: ResourceCost[]
+  timeRange?: string
 }
 
 const getProductIcon = (type: string) => {
@@ -55,7 +56,7 @@ const formatProductType = (type: string) => {
     .join(" ")
 }
 
-export function DigitalOceanProductsList({ resourceCosts }: DigitalOceanProductsListProps) {
+export function DigitalOceanProductsList({ resourceCosts, timeRange = "1" }: DigitalOceanProductsListProps) {
   // Group products by type
   const productsByType = resourceCosts.reduce(
     (acc, resource) => {
@@ -76,6 +77,9 @@ export function DigitalOceanProductsList({ resourceCosts }: DigitalOceanProducts
   }))
 
   console.log("[v0] DigitalOceanProductsList received:", resourceCosts.length, "resources")
+
+  const monthsNumber = Number.parseInt(timeRange)
+  const periodLabel = monthsNumber === 1 ? "per month" : `per ${monthsNumber} months`
 
   return (
     <Card className="bg-slate-800/50 border-slate-700">
@@ -106,7 +110,7 @@ export function DigitalOceanProductsList({ resourceCosts }: DigitalOceanProducts
               </div>
               <div className="text-right">
                 <p className="text-white font-semibold">${totalCost.toFixed(2)}</p>
-                <p className="text-xs text-slate-400">per month</p>
+                <p className="text-xs text-slate-400">{periodLabel}</p>
               </div>
             </div>
           ))}
