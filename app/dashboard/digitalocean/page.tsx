@@ -95,14 +95,19 @@ export default async function DigitalOceanDashboardPage({
   billingHistory?.forEach((billing) => {
     if (billing.raw_data?.resources) {
       billing.raw_data.resources.forEach((resource: any) => {
+        const productName = resource.product || resource.product_name || resource.description || 'Unknown Product'
+        const productDesc = resource.description || ''
+        
+        console.log('[v0] Processing resource:', { product: resource.product, description: resource.description, amount: resource.cost })
+        
         productsFromHistory.push({
-          id: resource.resource_id || `${resource.product_name}-${billing.billing_period}`,
-          resource_name: resource.product_name || resource.description || 'Unknown Product',
-          resource_type: resource.resource_type || 'unknown',
-          cost: resource.cost || 0,
+          id: resource.resource_id || `item-${resource.product}-${Date.now()}`,
+          resource_name: productName,
+          resource_type: resource.resource_type || 'storage',
+          cost: resource.cost || resource.amount || 0,
           metadata: {
-            product: resource.product_name,
-            description: resource.description,
+            product: resource.product || resource.product_name,
+            description: productDesc,
             period: billing.billing_period,
           },
           region: resource.region || 'N/A',

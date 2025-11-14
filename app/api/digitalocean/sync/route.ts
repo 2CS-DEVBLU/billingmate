@@ -146,24 +146,29 @@ export async function POST(request: NextRequest) {
         // Delete existing resource costs for this period
         await supabase.from("resource_costs").delete().eq("billing_history_id", billingHistory.id)
 
-        // Insert resource costs
         if (billingData.resources.length > 0) {
           const resourceCosts = billingData.resources.map((resource) => ({
             billing_history_id: billingHistory.id,
             resource_type: resource.resource_type,
             resource_id: resource.resource_id,
-            resource_name: resource.resource_name,
+            resource_name: resource.product || resource.product_name || resource.description || 'Unknown Product',
             cost: resource.cost,
             usage_hours: resource.usage_hours,
             region: resource.region,
             size_slug: resource.size_slug,
-            metadata: resource.metadata,
+            metadata: {
+              product: resource.product || resource.product_name,
+              description: resource.description,
+              ...resource.metadata,
+            },
           }))
 
           const { error: rcError } = await supabase.from("resource_costs").insert(resourceCosts)
 
           if (rcError) {
             console.error("[v0] Error inserting resource costs:", rcError)
+          } else {
+            console.log("[v0] Inserted", resourceCosts.length, "resource costs with product descriptions")
           }
         }
 
