@@ -3,14 +3,13 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { createClient } from "@/lib/supabase/client"
-import { Save, Loader2, Lock } from "lucide-react"
+import { Save, Loader2, Lock } from 'lucide-react'
 
 interface User {
   id: string
@@ -26,8 +25,17 @@ interface Company {
   address: string | null
   area_of_operation: string | null
   cnpj_cpf: string | null
+  vat_number: string | null
+  country_code: string
   admin_user_id: string | null
   unique_id: string | null
+  street?: string | null
+  number?: string | null
+  zip_code?: string | null
+  neighborhood?: string | null
+  city?: string | null
+  state?: string | null
+  country?: string | null
 }
 
 export function EditCompanyForm({ company, users }: { company: Company; users: User[] }) {
@@ -38,10 +46,18 @@ export function EditCompanyForm({ company, users }: { company: Company; users: U
     name: company.name || "",
     company_size: company.company_size || "",
     industry: company.industry || "",
-    address: company.address || "",
     area_of_operation: company.area_of_operation || "",
+    country_code: company.country_code || "BR",
     cnpj_cpf: company.cnpj_cpf || "",
+    vat_number: company.vat_number || "",
     admin_user_id: company.admin_user_id || "",
+    street: company.street || "",
+    number: company.number || "",
+    zip_code: company.zip_code || "",
+    neighborhood: company.neighborhood || "",
+    city: company.city || "",
+    state: company.state || "",
+    country: company.country || "",
   })
 
   useEffect(() => {
@@ -67,13 +83,23 @@ export function EditCompanyForm({ company, users }: { company: Company; users: U
       const supabase = createClient()
 
       const updateData = {
-        ...formData,
-        admin_user_id: formData.admin_user_id || null,
+        name: formData.name,
         company_size: formData.company_size || null,
         industry: formData.industry || null,
-        address: formData.address || null,
         area_of_operation: formData.area_of_operation || null,
-        ...(isAdmin ? { cnpj_cpf: formData.cnpj_cpf || null } : {}),
+        admin_user_id: formData.admin_user_id || null,
+        country_code: formData.country_code,
+        street: formData.street || null,
+        number: formData.number || null,
+        zip_code: formData.zip_code || null,
+        neighborhood: formData.neighborhood || null,
+        city: formData.city || null,
+        state: formData.state || null,
+        country: formData.country || null,
+        ...(isAdmin ? { 
+          cnpj_cpf: formData.country_code === 'BR' ? formData.cnpj_cpf || null : null,
+          vat_number: formData.country_code !== 'BR' ? formData.vat_number || null : null
+        } : {}),
       }
 
       const { error } = await supabase.from("companies").update(updateData).eq("id", company.id)
@@ -89,6 +115,8 @@ export function EditCompanyForm({ company, users }: { company: Company; users: U
       setLoading(false)
     }
   }
+
+  const isBrazil = formData.country_code === "BR"
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -164,37 +192,69 @@ export function EditCompanyForm({ company, users }: { company: Company; users: U
           />
         </div>
 
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="address" className="text-slate-300">
-            Address
+        <div className="space-y-2">
+          <Label htmlFor="country_code" className="text-slate-300">
+            Country
           </Label>
-          <Textarea
-            id="address"
-            value={formData.address}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            placeholder="Company physical address"
-            className="bg-slate-800 border-slate-700 text-white"
-            rows={3}
-          />
+          <Select
+            value={formData.country_code}
+            onValueChange={(value) => setFormData({ ...formData, country_code: value })}
+          >
+            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-700">
+              <SelectItem value="BR">Brazil</SelectItem>
+              <SelectItem value="US">United States</SelectItem>
+              <SelectItem value="GB">United Kingdom</SelectItem>
+              <SelectItem value="DE">Germany</SelectItem>
+              <SelectItem value="FR">France</SelectItem>
+              <SelectItem value="CA">Canada</SelectItem>
+              <SelectItem value="AU">Australia</SelectItem>
+              <SelectItem value="OTHER">Other</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="cnpj_cpf" className="text-slate-300">
-              CNPJ / CPF
-            </Label>
-            {!isAdmin && <Lock className="h-3 w-3 text-slate-500" />}
+        {isBrazil ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="cnpj_cpf" className="text-slate-300">
+                CNPJ / CPF *
+              </Label>
+              {!isAdmin && <Lock className="h-3 w-3 text-slate-500" />}
+            </div>
+            <Input
+              id="cnpj_cpf"
+              value={formData.cnpj_cpf}
+              onChange={(e) => setFormData({ ...formData, cnpj_cpf: e.target.value })}
+              placeholder="00.000.000/0000-00 or 000.000.000-00"
+              className="bg-slate-800 border-slate-700 text-white"
+              disabled={!isAdmin}
+              required
+            />
+            {!isAdmin && <p className="text-xs text-slate-500">Only platform administrators can edit CNPJ/CPF</p>}
           </div>
-          <Input
-            id="cnpj_cpf"
-            value={formData.cnpj_cpf}
-            onChange={(e) => setFormData({ ...formData, cnpj_cpf: e.target.value })}
-            placeholder="00.000.000/0000-00"
-            className="bg-slate-800 border-slate-700 text-white"
-            disabled={!isAdmin}
-          />
-          {!isAdmin && <p className="text-xs text-slate-500">Only platform administrators can edit CNPJ/CPF</p>}
-        </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="vat_number" className="text-slate-300">
+                VAT / Tax ID *
+              </Label>
+              {!isAdmin && <Lock className="h-3 w-3 text-slate-500" />}
+            </div>
+            <Input
+              id="vat_number"
+              value={formData.vat_number}
+              onChange={(e) => setFormData({ ...formData, vat_number: e.target.value })}
+              placeholder="Enter VAT or Tax ID"
+              className="bg-slate-800 border-slate-700 text-white"
+              disabled={!isAdmin}
+              required
+            />
+            {!isAdmin && <p className="text-xs text-slate-500">Only platform administrators can edit VAT</p>}
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="admin_user" className="text-slate-300">
@@ -215,6 +275,107 @@ export function EditCompanyForm({ company, users }: { company: Company; users: U
               ))}
             </SelectContent>
           </Select>
+        </div>
+      </div>
+
+      <div className="space-y-4 border-t border-slate-700 pt-6">
+        <h3 className="text-lg font-semibold text-white">Address Information</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="street" className="text-slate-300">
+              Street
+            </Label>
+            <Input
+              id="street"
+              value={formData.street}
+              onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+              placeholder="Street name"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="number" className="text-slate-300">
+              Number
+            </Label>
+            <Input
+              id="number"
+              value={formData.number}
+              onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+              placeholder="123"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="zip_code" className="text-slate-300">
+              Zip Code
+            </Label>
+            <Input
+              id="zip_code"
+              value={formData.zip_code}
+              onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+              placeholder="12345-678"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="neighborhood" className="text-slate-300">
+              Neighborhood
+            </Label>
+            <Input
+              id="neighborhood"
+              value={formData.neighborhood}
+              onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+              placeholder="District/Neighborhood"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="city" className="text-slate-300">
+              City
+            </Label>
+            <Input
+              id="city"
+              value={formData.city}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              placeholder="City"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="state" className="text-slate-300">
+              State
+            </Label>
+            <Input
+              id="state"
+              value={formData.state}
+              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+              placeholder="State/Province"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="country" className="text-slate-300">
+              Country
+            </Label>
+            <Input
+              id="country"
+              value={formData.country}
+              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+              placeholder="Country"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
         </div>
       </div>
 

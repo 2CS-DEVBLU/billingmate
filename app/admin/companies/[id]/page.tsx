@@ -1,10 +1,10 @@
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AdminNav } from "@/components/admin-nav"
-import { ArrowLeft, Users, UserPlus, Edit } from "lucide-react"
+import { ArrowLeft, Users, UserPlus, Edit } from 'lucide-react'
 import Link from "next/link"
 
 export default async function CompanyDetailPage({ params }: { params: { id: string } }) {
@@ -61,10 +61,23 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
   const isIncomplete =
     !company.name ||
     !company.company_size ||
-    !company.address ||
+    (!company.cnpj_cpf && !company.vat_number) ||
     !company.area_of_operation ||
-    !company.cnpj_cpf ||
     !company.admin_user_id
+
+  const formatAddress = () => {
+    const parts = []
+    if (company.street) parts.push(company.street)
+    if (company.number) parts.push(company.number)
+    if (company.neighborhood) parts.push(company.neighborhood)
+    if (company.city) parts.push(company.city)
+    if (company.state) parts.push(company.state)
+    if (company.zip_code) parts.push(company.zip_code)
+    if (company.country) parts.push(company.country)
+    return parts.length > 0 ? parts.join(", ") : null
+  }
+
+  const formattedAddress = formatAddress()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
@@ -133,16 +146,22 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
                     {company.area_of_operation || <span className="text-slate-600">Not provided</span>}
                   </p>
                 </div>
-                <div className="space-y-1 md:col-span-2">
-                  <p className="text-sm text-slate-400">Address</p>
+                <div className="space-y-1">
+                  <p className="text-sm text-slate-400">Country</p>
                   <p className="text-white font-medium">
-                    {company.address || <span className="text-slate-600">Not provided</span>}
+                    {company.country_code || <span className="text-slate-600">Not provided</span>}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm text-slate-400">CNPJ / CPF</p>
+                  <p className="text-sm text-slate-400">{company.country_code === 'BR' ? 'CNPJ / CPF' : 'VAT / Tax ID'}</p>
                   <p className="text-white font-medium">
-                    {company.cnpj_cpf || <span className="text-slate-600">Not provided</span>}
+                    {company.cnpj_cpf || company.vat_number || <span className="text-slate-600">Not provided</span>}
+                  </p>
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <p className="text-sm text-slate-400">Address</p>
+                  <p className="text-white font-medium">
+                    {formattedAddress || <span className="text-slate-600">Not provided</span>}
                   </p>
                 </div>
                 <div className="space-y-1">
