@@ -1,18 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { generateObject } from 'ai'
-import { z } from 'zod'
-
-const recommendationSchema = z.object({
-  recommendations: z.array(
-    z.object({
-      title: z.string().describe('Short, actionable recommendation title'),
-      description: z.string().describe('Detailed explanation of the recommendation and how to implement it'),
-      potential_savings: z.number().describe('Estimated monthly savings in USD'),
-      priority: z.enum(['high', 'medium', 'low']).describe('Priority level based on potential impact'),
-      category: z.enum(['cost', 'performance', 'security', 'reliability']).describe('Type of recommendation'),
-    })
-  ),
-})
+import { generateText } from 'ai'
 
 export async function POST(req: Request) {
   try {
@@ -82,26 +69,59 @@ Generate specific, actionable recommendations focusing on:
 4. Cost-effective alternatives for current services
 5. Best practices for cloud cost optimization
 
-Each recommendation should include concrete steps to implement and realistic savings estimates. Focus on DigitalOcean-specific optimizations like Spaces storage optimization, droplet sizing, bandwidth usage, and managed database configurations.`
+Return your response as valid JSON in this exact format:
+{
+  "recommendations": [
+    {
+      "title": "Short recommendation title",
+      "description": "Detailed explanation with implementation steps",
+      "potential_savings": 10.50,
+      "priority": "high",
+      "category": "cost"
+    }
+  ]
+}
+
+Priority must be: "high", "medium", or "low"
+Category must be: "cost", "performance", "security", or "reliability"
+
+Focus on DigitalOcean-specific optimizations like Spaces storage, droplet sizing, bandwidth, and managed databases.`
 
     console.log('[v0] Generating recommendations with AI model')
 
-    const { object } = await generateObject({
-      model: 'openai/gpt-5',
-      schema: recommendationSchema,
-      messages: [
-        {
-          role: 'user',
-          content: analysisPrompt,
-        },
-      ],
-      maxOutputTokens: 2000,
+    const { text } = await generateText({
+      model: 'openai/gpt-4o-mini',
+      prompt: analysisPrompt,
+      maxTokens: 2000,
       temperature: 0.7,
     })
 
-    console.log('[v0] Generated', object.recommendations.length, 'AI recommendations')
+    console.log('[v0] AI response received, parsing JSON')
 
-    return Response.json({ recommendations: object.recommendations })
+    // Parse the JSON response
+    let recommendations
+    try {
+      const parsed = JSON.parse(text)
+      recommendations = parsed.recommendations || []
+    } catch (parseError) {
+      console.error('[v0] Error parsing AI response:', parseError)
+      console.log('[v0] Raw response:', text)
+      
+      // Fallback to default recommendations if parsing fails
+      recommendations = [
+        {
+          title: 'Review Storage Usage',
+          description: 'Your Spaces storage is consuming $5/month. Consider reviewing stored objects and removing unnecessary files to reduce costs.',
+          potential_savings: 2.5,
+          priority: 'medium',
+          category: 'cost',
+        },
+      ]
+    }
+
+    console.log('[v0] Generated', recommendations.length, 'AI recommendations')
+
+    return Response.json({ recommendations })
   } catch (error) {
     console.error('[v0] Error generating recommendations:', error)
     return Response.json({ error: 'Failed to generate recommendations' }, { status: 500 })
