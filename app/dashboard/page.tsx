@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { DollarSign, TrendingDown, Server, Cloud, ExternalLink, BadgeIcon } from 'lucide-react'
+import { DollarSign, TrendingDown, TrendingUp, Server, Cloud, ExternalLink, Database, AlertCircle } from 'lucide-react'
 import { ClientNav } from "@/components/client-nav"
 import { getUserWithCompany } from "@/lib/auth-utils"
 import { RegistrationIncompleteBanner } from "@/components/registration-incomplete-banner"
