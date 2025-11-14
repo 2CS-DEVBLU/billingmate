@@ -103,35 +103,37 @@ export function DeleteCompanyDialog({
             </div>
             <AlertDialogTitle className="text-2xl">Delete Company</AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="text-slate-400 space-y-4">
-            <p className="text-base">
-              You are about to permanently delete <span className="font-semibold text-white">{companyName}</span> and
-              all associated data. This action cannot be undone.
-            </p>
+          <AlertDialogDescription asChild>
+            <div className="text-slate-400 space-y-4">
+              <p className="text-base">
+                You are about to permanently delete <span className="font-semibold text-white">{companyName}</span> and
+                all associated data. This action cannot be undone.
+              </p>
 
-            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 space-y-2">
-              <p className="font-semibold text-red-400">The following will be permanently deleted:</p>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>{userCount} user account{userCount !== 1 ? "s" : ""}</li>
-                <li>{integrationCount} integration{integrationCount !== 1 ? "s" : ""}</li>
-                <li>All billing history and resource cost data</li>
-                <li>All subscriptions and payment information</li>
-                <li>All sync logs and alerts</li>
-                <li>All recommendations and cost anomalies</li>
-              </ul>
-            </div>
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 space-y-2">
+                <p className="font-semibold text-red-400">The following will be permanently deleted:</p>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>{userCount} user account{userCount !== 1 ? "s" : ""}</li>
+                  <li>{integrationCount} integration{integrationCount !== 1 ? "s" : ""}</li>
+                  <li>All billing history and resource cost data</li>
+                  <li>All subscriptions and payment information</li>
+                  <li>All sync logs and alerts</li>
+                  <li>All recommendations and cost anomalies</li>
+                </ul>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirm-name" className="text-white">
-                Type <span className="font-mono font-semibold">{companyName}</span> to confirm deletion:
-              </Label>
-              <Input
-                id="confirm-name"
-                value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value)}
-                placeholder={companyName}
-                className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="confirm-name" className="text-white">
+                  Type <span className="font-mono font-semibold">{companyName}</span> to confirm deletion:
+                </Label>
+                <Input
+                  id="confirm-name"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  placeholder={companyName}
+                  className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
+                />
+              </div>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createServiceClient } from "@/lib/supabase/server"
 
 export async function DELETE(request: Request) {
   try {
@@ -29,89 +29,127 @@ export async function DELETE(request: Request) {
 
     console.log("[v0] Starting company deletion for ID:", companyId)
 
+    const serviceSupabase = await createServiceClient()
+    
     // Delete all related data in order (respecting foreign key constraints)
     
     // 1. Delete user invitations
-    const { error: invitationsError } = await supabase
+    const { error: invitationsError } = await serviceSupabase
       .from("user_invitations")
       .delete()
       .eq("company_id", companyId)
-    if (invitationsError) console.error("[v0] Error deleting invitations:", invitationsError)
+    if (invitationsError) {
+      console.error("[v0] Error deleting invitations:", invitationsError)
+      return NextResponse.json({ error: "Failed to delete invitations: " + invitationsError.message }, { status: 500 })
+    }
 
     // 2. Delete alerts
-    const { error: alertsError } = await supabase.from("alerts").delete().eq("company_id", companyId)
-    if (alertsError) console.error("[v0] Error deleting alerts:", alertsError)
+    const { error: alertsError } = await serviceSupabase.from("alerts").delete().eq("company_id", companyId)
+    if (alertsError) {
+      console.error("[v0] Error deleting alerts:", alertsError)
+      return NextResponse.json({ error: "Failed to delete alerts: " + alertsError.message }, { status: 500 })
+    }
 
     // 3. Delete cost anomalies
-    const { error: anomaliesError } = await supabase.from("cost_anomalies").delete().eq("company_id", companyId)
-    if (anomaliesError) console.error("[v0] Error deleting anomalies:", anomaliesError)
+    const { error: anomaliesError } = await serviceSupabase.from("cost_anomalies").delete().eq("company_id", companyId)
+    if (anomaliesError) {
+      console.error("[v0] Error deleting anomalies:", anomaliesError)
+      return NextResponse.json({ error: "Failed to delete anomalies: " + anomaliesError.message }, { status: 500 })
+    }
 
     // 4. Delete sync logs
-    const { error: syncLogsError } = await supabase.from("sync_logs").delete().eq("company_id", companyId)
-    if (syncLogsError) console.error("[v0] Error deleting sync logs:", syncLogsError)
+    const { error: syncLogsError } = await serviceSupabase.from("sync_logs").delete().eq("company_id", companyId)
+    if (syncLogsError) {
+      console.error("[v0] Error deleting sync logs:", syncLogsError)
+      return NextResponse.json({ error: "Failed to delete sync logs: " + syncLogsError.message }, { status: 500 })
+    }
 
     // 5. Delete resource costs (linked to billing history)
-    const { data: billingHistory } = await supabase
+    const { data: billingHistory } = await serviceSupabase
       .from("billing_history")
       .select("id")
       .eq("company_id", companyId)
     
     if (billingHistory && billingHistory.length > 0) {
       const billingIds = billingHistory.map((b) => b.id)
-      const { error: resourceCostsError } = await supabase
+      const { error: resourceCostsError } = await serviceSupabase
         .from("resource_costs")
         .delete()
         .in("billing_history_id", billingIds)
-      if (resourceCostsError) console.error("[v0] Error deleting resource costs:", resourceCostsError)
+      if (resourceCostsError) {
+        console.error("[v0] Error deleting resource costs:", resourceCostsError)
+        return NextResponse.json({ error: "Failed to delete resource costs: " + resourceCostsError.message }, { status: 500 })
+      }
     }
 
     // 6. Delete billing history
-    const { error: billingError } = await supabase.from("billing_history").delete().eq("company_id", companyId)
-    if (billingError) console.error("[v0] Error deleting billing history:", billingError)
+    const { error: billingError } = await serviceSupabase.from("billing_history").delete().eq("company_id", companyId)
+    if (billingError) {
+      console.error("[v0] Error deleting billing history:", billingError)
+      return NextResponse.json({ error: "Failed to delete billing history: " + billingError.message }, { status: 500 })
+    }
 
     // 7. Delete recommendations (linked to cloud accounts)
-    const { data: cloudAccounts } = await supabase
+    const { data: cloudAccounts } = await serviceSupabase
       .from("cloud_accounts")
       .select("id")
       .eq("company_id", companyId)
     
     if (cloudAccounts && cloudAccounts.length > 0) {
       const accountIds = cloudAccounts.map((a) => a.id)
-      const { error: recommendationsError } = await supabase
+      const { error: recommendationsError } = await serviceSupabase
         .from("recommendations")
         .delete()
         .in("cloud_account_id", accountIds)
-      if (recommendationsError) console.error("[v0] Error deleting recommendations:", recommendationsError)
+      if (recommendationsError) {
+        console.error("[v0] Error deleting recommendations:", recommendationsError)
+        return NextResponse.json({ error: "Failed to delete recommendations: " + recommendationsError.message }, { status: 500 })
+      }
 
       // 8. Delete cost data
-      const { error: costDataError } = await supabase
+      const { error: costDataError } = await serviceSupabase
         .from("cost_data")
         .delete()
         .in("cloud_account_id", accountIds)
-      if (costDataError) console.error("[v0] Error deleting cost data:", costDataError)
+      if (costDataError) {
+        console.error("[v0] Error deleting cost data:", costDataError)
+        return NextResponse.json({ error: "Failed to delete cost data: " + costDataError.message }, { status: 500 })
+      }
     }
 
     // 9. Delete cloud accounts
-    const { error: cloudAccountsError } = await supabase.from("cloud_accounts").delete().eq("company_id", companyId)
-    if (cloudAccountsError) console.error("[v0] Error deleting cloud accounts:", cloudAccountsError)
+    const { error: cloudAccountsError } = await serviceSupabase.from("cloud_accounts").delete().eq("company_id", companyId)
+    if (cloudAccountsError) {
+      console.error("[v0] Error deleting cloud accounts:", cloudAccountsError)
+      return NextResponse.json({ error: "Failed to delete cloud accounts: " + cloudAccountsError.message }, { status: 500 })
+    }
 
     // 10. Delete cloud integrations
-    const { error: integrationsError } = await supabase
+    const { error: integrationsError } = await serviceSupabase
       .from("cloud_integrations")
       .delete()
       .eq("company_id", companyId)
-    if (integrationsError) console.error("[v0] Error deleting integrations:", integrationsError)
+    if (integrationsError) {
+      console.error("[v0] Error deleting integrations:", integrationsError)
+      return NextResponse.json({ error: "Failed to delete integrations: " + integrationsError.message }, { status: 500 })
+    }
 
     // 11. Delete subscriptions
-    const { error: subscriptionsError } = await supabase.from("subscriptions").delete().eq("company_id", companyId)
-    if (subscriptionsError) console.error("[v0] Error deleting subscriptions:", subscriptionsError)
+    const { error: subscriptionsError } = await serviceSupabase.from("subscriptions").delete().eq("company_id", companyId)
+    if (subscriptionsError) {
+      console.error("[v0] Error deleting subscriptions:", subscriptionsError)
+      return NextResponse.json({ error: "Failed to delete subscriptions: " + subscriptionsError.message }, { status: 500 })
+    }
 
     // 12. Delete user profiles
-    const { error: profilesError } = await supabase.from("profiles").delete().eq("company_id", companyId)
-    if (profilesError) console.error("[v0] Error deleting profiles:", profilesError)
+    const { error: profilesError } = await serviceSupabase.from("profiles").delete().eq("company_id", companyId)
+    if (profilesError) {
+      console.error("[v0] Error deleting profiles:", profilesError)
+      return NextResponse.json({ error: "Failed to delete profiles: " + profilesError.message }, { status: 500 })
+    }
 
     // 13. Finally, delete the company
-    const { error: companyError } = await supabase.from("companies").delete().eq("id", companyId)
+    const { error: companyError } = await serviceSupabase.from("companies").delete().eq("id", companyId)
 
     if (companyError) {
       console.error("[v0] Error deleting company:", companyError)
