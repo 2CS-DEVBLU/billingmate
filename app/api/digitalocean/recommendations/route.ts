@@ -98,10 +98,17 @@ Focus on DigitalOcean-specific optimizations like Spaces storage, droplet sizing
 
     console.log('[v0] AI response received, parsing JSON')
 
-    // Parse the JSON response
     let recommendations
     try {
-      const parsed = JSON.parse(text)
+      // Remove markdown code block syntax if present
+      let cleanedText = text.trim()
+      if (cleanedText.startsWith('\`\`\`json')) {
+        cleanedText = cleanedText.replace(/^\`\`\`json\s*/, '').replace(/\s*\`\`\`$/, '')
+      } else if (cleanedText.startsWith('\`\`\`')) {
+        cleanedText = cleanedText.replace(/^\`\`\`\s*/, '').replace(/\s*\`\`\`$/, '')
+      }
+      
+      const parsed = JSON.parse(cleanedText)
       recommendations = parsed.recommendations || []
     } catch (parseError) {
       console.error('[v0] Error parsing AI response:', parseError)
