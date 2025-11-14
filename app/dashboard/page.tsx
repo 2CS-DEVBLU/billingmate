@@ -17,6 +17,13 @@ const AVAILABLE_PROVIDERS = [
     logo: "🌊",
   },
   {
+    id: "datadog",
+    name: "Datadog",
+    description: "Track your monitoring and observability costs",
+    logo: "🐕",
+    comingSoon: true,
+  },
+  {
     id: "aws",
     name: "Amazon Web Services",
     description: "Track costs across EC2, S3, RDS, and other AWS services",
