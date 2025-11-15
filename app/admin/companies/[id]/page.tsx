@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AdminNav } from "@/components/admin-nav"
-import { ArrowLeft, Users, UserPlus, Edit, Trash2 } from 'lucide-react'
+import { ArrowLeft, Users, UserPlus, Edit, Trash2, Ban, CheckCircle } from 'lucide-react'
 import Link from "next/link"
 import { DeleteCompanyDialog } from "@/components/delete-company-dialog"
+import { DeactivateCompanyDialog } from "@/components/deactivate-company-dialog"
 
 export default async function CompanyDetailPage({ params }: { params: { id: string } }) {
   console.log("[v0] Loading company detail page for ID:", params.id)
@@ -112,6 +113,20 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
                   Incomplete Registration
                 </Badge>
               )}
+              {company.is_active ? (
+                <DeactivateCompanyDialog
+                  companyId={company.id}
+                  companyName={company.name}
+                  userCount={userCount || 0}
+                />
+              ) : (
+                <DeactivateCompanyDialog
+                  companyId={company.id}
+                  companyName={company.name}
+                  userCount={userCount || 0}
+                  isReactivating
+                />
+              )}
               <DeleteCompanyDialog
                 companyId={company.id}
                 companyName={company.name}
@@ -121,6 +136,25 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
             </div>
           </div>
         </div>
+
+        {!company.is_active && (
+          <Card className="border-red-800 bg-red-900/20 backdrop-blur mb-6">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <Ban className="h-5 w-5 text-red-400" />
+                <div>
+                  <p className="text-red-300 font-medium">Company Deactivated</p>
+                  <p className="text-red-400 text-sm mt-1">
+                    This company and all its users have been deactivated. 
+                    {company.deactivated_at && (
+                      <> Deactivated on {new Date(company.deactivated_at).toLocaleDateString()}.</>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-6">
           <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
@@ -180,6 +214,14 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
                   <p className="text-sm text-slate-400">Address</p>
                   <p className="text-white font-medium">
                     {formattedAddress || <span className="text-slate-600">Not provided</span>}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-slate-400">
+                    {company.country === 'Brazil' ? 'CNPJ/CPF' : 'VAT Number'}
+                  </p>
+                  <p className="text-white font-medium">
+                    {company.cnpj_cpf || company.vat_number || <span className="text-slate-600">Not provided</span>}
                   </p>
                 </div>
                 <div className="space-y-1">
