@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { TrendingDown, LayoutDashboard, Settings, LogOut, CreditCard, User, Building, UserPlus } from 'lucide-react'
+import { TrendingDown, LayoutDashboard, Settings, LogOut, CreditCard, User, Building } from 'lucide-react'
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from 'next/navigation'
 import { InviteUserDialog } from '@/components/invite-user-dialog'
@@ -64,6 +64,22 @@ export function ClientNav({ companyName, isAdmin = false }: ClientNavProps) {
             </Button>
             {isAdmin && (
               <Button
+                variant={pathname === "/dashboard/users" ? "secondary" : "ghost"}
+                asChild
+                className={
+                  pathname === "/dashboard/users"
+                    ? "bg-slate-800 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                }
+              >
+                <Link href="/dashboard/users">
+                  <User className="h-4 w-4 mr-2" />
+                  Users
+                </Link>
+              </Button>
+            )}
+            {isAdmin && (
+              <Button
                 variant={pathname === "/dashboard/billing" ? "secondary" : "ghost"}
                 asChild
                 className={
@@ -105,13 +121,6 @@ export function ClientNav({ companyName, isAdmin = false }: ClientNavProps) {
                       Company Settings
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => setInviteDialogOpen(true)}
-                    className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer"
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Invite Users
-                  </DropdownMenuItem>
                 </>
               )}
               <DropdownMenuSeparator className="bg-slate-800" />
@@ -126,13 +135,6 @@ export function ClientNav({ companyName, isAdmin = false }: ClientNavProps) {
           </DropdownMenu>
         </div>
       </div>
-      
-      {isAdmin && (
-        <InviteUserDialog 
-          open={inviteDialogOpen} 
-          onOpenChange={setInviteDialogOpen}
-        />
-      )}
     </header>
   )
 }
