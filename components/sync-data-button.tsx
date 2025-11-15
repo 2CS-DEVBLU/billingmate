@@ -1,18 +1,20 @@
 "use client"
 
 import { Button } from "./ui/button"
-import { RefreshCw } from "lucide-react"
+import { RefreshCw } from 'lucide-react'
 import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 
 export function SyncDataButton({
   integrationId,
   canSync,
   cooldownRemaining,
+  provider = "digitalocean", // Added provider prop with default value
 }: {
   integrationId: string
   canSync: boolean
   cooldownRemaining: number
+  provider?: "digitalocean" | "datadog" // Added provider type
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -24,7 +26,7 @@ export function SyncDataButton({
     setIsSyncing(true)
 
     try {
-      const response = await fetch("/api/digitalocean/sync", {
+      const response = await fetch(`/api/${provider}/sync`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ integrationId, syncType: "manual" }),
