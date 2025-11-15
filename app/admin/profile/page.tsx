@@ -52,7 +52,7 @@ export default async function AdminProfilePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ProfileForm profile={profile} />
+            <ProfileForm profile={profile} user={user} />
           </CardContent>
         </Card>
       </main>
