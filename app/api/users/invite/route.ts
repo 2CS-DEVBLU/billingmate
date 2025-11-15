@@ -17,13 +17,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    console.log("[v0] Parsing request body...")
+    const body = await request.json()
+    const { email, role } = body
+    console.log("[v0] Email:", email, "Role:", role)
+
+    if (!email || !role) {
+      return NextResponse.json({ error: "Email and role are required" }, { status: 400 })
+    }
+
     // Get user profile with company info
     console.log("[v0] Getting user profile...")
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("id, company_id, company_account_role, is_admin")
       .eq("id", user.id)
-      .single()
+      .maybeSingle()
 
     console.log("[v0] Profile data:", profile)
     console.log("[v0] Profile error:", profileError)
@@ -43,7 +52,7 @@ export async function POST(request: Request) {
       .from("companies")
       .select("id, name, admin_user_id, cnpj_cpf, vat_number, is_registration_complete")
       .eq("id", profile.company_id)
-      .single()
+      .maybeSingle()
 
     console.log("[v0] Company data:", company)
     console.log("[v0] Company error:", companyError)
@@ -60,14 +69,6 @@ export async function POST(request: Request) {
 
     if (!isAdmin) {
       return NextResponse.json({ error: "Only administrators can invite users" }, { status: 403 })
-    }
-
-    console.log("[v0] Parsing request body...")
-    const { email, role } = await request.json()
-    console.log("[v0] Email:", email, "Role:", role)
-
-    if (!email || !role) {
-      return NextResponse.json({ error: "Email and role are required" }, { status: 400 })
     }
 
     // Check if company registration is complete
@@ -149,7 +150,7 @@ export async function POST(request: Request) {
           })
           .eq("id", existingInvite.id)
           .select()
-          .single()
+          .maybeSingle()
 
         if (updateError) {
           console.error("[v0] Error updating invitation:", updateError)
@@ -157,7 +158,7 @@ export async function POST(request: Request) {
         }
 
         console.log("[v0] Invitation updated:", updatedInvite)
-        const invitationUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/accept-invite?token=${token}`
+        const invitationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/auth/accept-invite?token=${token}`
 
         return NextResponse.json({
           success: true,
@@ -198,7 +199,7 @@ export async function POST(request: Request) {
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
       })
       .select()
-      .single()
+      .maybeSingle()
 
     if (inviteError) {
       console.error("[v0] Error creating invitation:", inviteError)
@@ -209,7 +210,7 @@ export async function POST(request: Request) {
 
     // TODO: Send invitation email with token
     // For now, we'll just return the invitation URL
-    const invitationUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/accept-invite?token=${token}`
+    const invitationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/auth/accept-invite?token=${token}`
     
     console.log("[v0] Invitation URL:", invitationUrl)
 
@@ -220,9 +221,11 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error("[v0] Critical error in invite route:", error)
-    console.error("[v0] Error name:", error instanceof Error ? error.name : "Unknown")
-    console.error("[v0] Error message:", error instanceof Error ? error.message : "Unknown")
-    console.error("[v0] Error stack:", error instanceof Error ? error.stack : "No stack trace")
+    console.error("[v0] Error details:", {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : "No stack trace"
+    })
     
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Internal server error" },
