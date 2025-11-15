@@ -31,8 +31,15 @@ export default async function CompaniesPage() {
       *,
       subscriptions(*)
     `)
-    .eq("is_platform_owner", false)
+    .or("is_platform_owner.is.null,is_platform_owner.eq.false")
     .order("created_at", { ascending: false })
+
+  // Additional filter in JavaScript to exclude by name as extra safety measure
+  const clientCompanies = companies?.filter(
+    (company) => 
+      !company.name?.toLowerCase().includes('2cs') &&
+      !company.is_platform_owner
+  )
 
   const getActiveSubscription = (company: any) => {
     if (!company.subscriptions || company.subscriptions.length === 0) {
@@ -61,7 +68,7 @@ export default async function CompaniesPage() {
           <CardHeader>
             <CardTitle className="text-white">All Client Companies</CardTitle>
             <CardDescription className="text-slate-400">
-              {companies?.length || 0} {companies?.length === 1 ? "company" : "companies"} registered
+              {clientCompanies?.length || 0} {clientCompanies?.length === 1 ? "company" : "companies"} registered
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -76,14 +83,14 @@ export default async function CompaniesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {!companies || companies.length === 0 ? (
+                  {!clientCompanies || clientCompanies.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center text-slate-500 py-8">
                         No client companies found in the system.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    companies.map((company) => {
+                    clientCompanies.map((company) => {
                       const subscription = getActiveSubscription(company)
 
                       return (
