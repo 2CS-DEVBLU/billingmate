@@ -56,7 +56,7 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
 
   const [formData, setFormData] = useState({
     name: company.name || "",
-    country_code: company.country_code || "BR",
+    country_code: company.country_code || "",
     cnpj_cpf: company.cnpj_cpf || "",
     vat_number: company.vat_number || "",
     industry: company.industry || "",
@@ -71,6 +71,10 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
     country: company.country || "",
   })
 
+  const hasCountry = formData.country_code !== ""
+  const hasAddress = formData.street && formData.city && formData.country
+  const isBrazil = formData.country_code === "BR"
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -78,11 +82,13 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
     setSuccess(false)
 
     try {
-      if (formData.country_code === "BR" && !formData.cnpj_cpf.trim()) {
-        throw new Error("CNPJ or CPF is required for Brazilian companies")
-      }
-      if (formData.country_code !== "BR" && !formData.vat_number.trim()) {
-        throw new Error("VAT number is required for international companies")
+      if (hasAddress) {
+        if (formData.country_code === "BR" && !formData.cnpj_cpf.trim()) {
+          throw new Error("CNPJ or CPF is required for Brazilian companies")
+        }
+        if (formData.country_code !== "BR" && !formData.vat_number.trim()) {
+          throw new Error("VAT number is required for international companies")
+        }
       }
 
       const response = await fetch("/api/company/update", {
@@ -153,8 +159,6 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
     }
   }
 
-  const isBrazil = formData.country_code === "BR"
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {company.unique_id && (
@@ -203,62 +207,15 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="company_size" className="text-slate-300">
-            Company Size
-          </Label>
-          <Select
-            value={formData.company_size}
-            onValueChange={(value) => setFormData({ ...formData, company_size: value })}
-          >
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-              <SelectValue placeholder="Select size" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1-10">1-10 employees</SelectItem>
-              <SelectItem value="11-50">11-50 employees</SelectItem>
-              <SelectItem value="51-200">51-200 employees</SelectItem>
-              <SelectItem value="201-500">201-500 employees</SelectItem>
-              <SelectItem value="501+">501+ employees</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="industry" className="text-slate-300">
-            Industry
-          </Label>
-          <Input
-            id="industry"
-            value={formData.industry}
-            onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-            placeholder="e.g., Technology, Healthcare"
-            className="bg-slate-800 border-slate-700 text-white"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="area_of_operation" className="text-slate-300">
-            Area of Operation
-          </Label>
-          <Input
-            id="area_of_operation"
-            value={formData.area_of_operation}
-            onChange={(e) => setFormData({ ...formData, area_of_operation: e.target.value })}
-            placeholder="e.g., Cloud Computing, SaaS"
-            className="bg-slate-800 border-slate-700 text-white"
-          />
-        </div>
-
-        <div className="space-y-2">
           <Label htmlFor="country_code" className="text-slate-300">
-            Country
+            Country *
           </Label>
           <Select
             value={formData.country_code}
             onValueChange={(value) => setFormData({ ...formData, country_code: value })}
           >
             <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-              <SelectValue />
+              <SelectValue placeholder="Select country" />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-700">
               <SelectItem value="BR">Brazil</SelectItem>
@@ -273,137 +230,206 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
           </Select>
         </div>
 
-        {isBrazil ? (
-          <div className="space-y-2">
-            <Label htmlFor="cnpj_cpf" className="text-slate-300">
-              CNPJ / CPF *
-            </Label>
-            <Input
-              id="cnpj_cpf"
-              value={formData.cnpj_cpf}
-              onChange={(e) => setFormData({ ...formData, cnpj_cpf: e.target.value })}
-              placeholder="00.000.000/0000-00 or 000.000.000-00"
-              className="bg-slate-800 border-slate-700 text-white"
-              required
-            />
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <Label htmlFor="vat_number" className="text-slate-300">
-              VAT / Tax ID *
-            </Label>
-            <Input
-              id="vat_number"
-              value={formData.vat_number}
-              onChange={(e) => setFormData({ ...formData, vat_number: e.target.value })}
-              placeholder="Enter VAT or Tax ID"
-              className="bg-slate-800 border-slate-700 text-white"
-              required
-            />
-          </div>
+        {hasCountry && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="company_size" className="text-slate-300">
+                Company Size
+              </Label>
+              <Select
+                value={formData.company_size}
+                onValueChange={(value) => setFormData({ ...formData, company_size: value })}
+              >
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue placeholder="Select size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1-10">1-10 employees</SelectItem>
+                  <SelectItem value="11-50">11-50 employees</SelectItem>
+                  <SelectItem value="51-200">51-200 employees</SelectItem>
+                  <SelectItem value="201-500">201-500 employees</SelectItem>
+                  <SelectItem value="501+">501+ employees</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="industry" className="text-slate-300">
+                Industry
+              </Label>
+              <Input
+                id="industry"
+                value={formData.industry}
+                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                placeholder="e.g., Technology, Healthcare"
+                className="bg-slate-800 border-slate-700 text-white"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="area_of_operation" className="text-slate-300">
+                Area of Operation
+              </Label>
+              <Input
+                id="area_of_operation"
+                value={formData.area_of_operation}
+                onChange={(e) => setFormData({ ...formData, area_of_operation: e.target.value })}
+                placeholder="e.g., Cloud Computing, SaaS"
+                className="bg-slate-800 border-slate-700 text-white"
+              />
+            </div>
+          </>
         )}
       </div>
 
-      <div className="space-y-4 border-t border-slate-700 pt-6">
-        <h3 className="text-lg font-semibold text-white">Address Information</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="street" className="text-slate-300">
-              Street
-            </Label>
-            <Input
-              id="street"
-              value={formData.street}
-              onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-              placeholder="Street name"
-              className="bg-slate-800 border-slate-700 text-white"
-            />
+      {hasCountry && (
+        <div className="space-y-4 border-t border-slate-700 pt-6">
+          <h3 className="text-lg font-semibold text-white">Address Information</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="street" className="text-slate-300">
+                Street *
+              </Label>
+              <Input
+                id="street"
+                value={formData.street}
+                onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                placeholder="Street name"
+                className="bg-slate-800 border-slate-700 text-white"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="number" className="text-slate-300">
+                Number *
+              </Label>
+              <Input
+                id="number"
+                value={formData.number}
+                onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                placeholder="123"
+                className="bg-slate-800 border-slate-700 text-white"
+                required
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="number" className="text-slate-300">
-              Number
-            </Label>
-            <Input
-              id="number"
-              value={formData.number}
-              onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-              placeholder="123"
-              className="bg-slate-800 border-slate-700 text-white"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="zip_code" className="text-slate-300">
+                Zip Code *
+              </Label>
+              <Input
+                id="zip_code"
+                value={formData.zip_code}
+                onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                placeholder="12345-678"
+                className="bg-slate-800 border-slate-700 text-white"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="neighborhood" className="text-slate-300">
+                Neighborhood
+              </Label>
+              <Input
+                id="neighborhood"
+                value={formData.neighborhood}
+                onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+                placeholder="District/Neighborhood"
+                className="bg-slate-800 border-slate-700 text-white"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="city" className="text-slate-300">
+                City *
+              </Label>
+              <Input
+                id="city"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                placeholder="City"
+                className="bg-slate-800 border-slate-700 text-white"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="state" className="text-slate-300">
+                State *
+              </Label>
+              <Input
+                id="state"
+                value={formData.state}
+                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                placeholder="State/Province"
+                className="bg-slate-800 border-slate-700 text-white"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="country" className="text-slate-300">
+                Country Name *
+              </Label>
+              <Input
+                id="country"
+                value={formData.country}
+                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                placeholder="e.g., Brazil, United States"
+                className="bg-slate-800 border-slate-700 text-white"
+                required
+              />
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="zip_code" className="text-slate-300">
-              Zip Code
-            </Label>
-            <Input
-              id="zip_code"
-              value={formData.zip_code}
-              onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
-              placeholder="12345-678"
-              className="bg-slate-800 border-slate-700 text-white"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="neighborhood" className="text-slate-300">
-              Neighborhood
-            </Label>
-            <Input
-              id="neighborhood"
-              value={formData.neighborhood}
-              onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-              placeholder="District/Neighborhood"
-              className="bg-slate-800 border-slate-700 text-white"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="city" className="text-slate-300">
-              City
-            </Label>
-            <Input
-              id="city"
-              value={formData.city}
-              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              placeholder="City"
-              className="bg-slate-800 border-slate-700 text-white"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="state" className="text-slate-300">
-              State
-            </Label>
-            <Input
-              id="state"
-              value={formData.state}
-              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-              placeholder="State/Province"
-              className="bg-slate-800 border-slate-700 text-white"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="country" className="text-slate-300">
-              Country
-            </Label>
-            <Input
-              id="country"
-              value={formData.country}
-              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-              placeholder="Country"
-              className="bg-slate-800 border-slate-700 text-white"
-            />
+      {hasAddress && (
+        <div className="space-y-4 border-t border-slate-700 pt-6">
+          <h3 className="text-lg font-semibold text-white">Tax Information</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {isBrazil ? (
+              <div className="space-y-2">
+                <Label htmlFor="cnpj_cpf" className="text-slate-300">
+                  CNPJ / CPF *
+                </Label>
+                <Input
+                  id="cnpj_cpf"
+                  value={formData.cnpj_cpf}
+                  onChange={(e) => setFormData({ ...formData, cnpj_cpf: e.target.value })}
+                  placeholder="00.000.000/0000-00 or 000.000.000-00"
+                  className="bg-slate-800 border-slate-700 text-white"
+                  required
+                />
+                <p className="text-xs text-slate-400">Required for Brazilian companies</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="vat_number" className="text-slate-300">
+                  VAT / Tax ID *
+                </Label>
+                <Input
+                  id="vat_number"
+                  value={formData.vat_number}
+                  onChange={(e) => setFormData({ ...formData, vat_number: e.target.value })}
+                  placeholder="Enter VAT or Tax ID"
+                  className="bg-slate-800 border-slate-700 text-white"
+                  required
+                />
+                <p className="text-xs text-slate-400">Required for tax compliance</p>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
 
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-900/20 border border-red-800 rounded-lg">
