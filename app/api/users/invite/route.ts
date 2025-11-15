@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     // Get user profile with company info
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("*, companies!profiles_company_id_fkey(*)")
+      .select("id, company_id, company_account_role, is_admin")
       .eq("id", user.id)
       .single()
 
@@ -23,18 +23,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 })
     }
 
+    if (!profile.company_id) {
+      return NextResponse.json({ error: "No company associated with user" }, { status: 400 })
+    }
+
+    // Get company data separately
+    const { data: company, error: companyError } = await supabase
+      .from("companies")
+      .select("id, name, admin_user_id, cnpj_cpf, vat_number, is_registration_complete")
+      .eq("id", profile.company_id)
+      .single()
+
+    if (companyError || !company) {
+      console.error("[v0] Error fetching company:", companyError)
+      return NextResponse.json({ error: "Company not found" }, { status: 404 })
+    }
+
     // Check if user is admin
-    const company = profile.companies as any
     const isAdmin = profile.company_account_role === 'admin' || 
                     profile.is_admin || 
-                    company?.admin_user_id === user.id
+                    company.admin_user_id === user.id
 
     if (!isAdmin) {
       return NextResponse.json({ error: "Only administrators can invite users" }, { status: 403 })
-    }
-
-    if (!profile.company_id) {
-      return NextResponse.json({ error: "No company associated with user" }, { status: 400 })
     }
 
     const { email, role } = await request.json()
@@ -44,7 +55,7 @@ export async function POST(request: Request) {
     }
 
     // Check if company registration is complete
-    if (!company?.cnpj_cpf && !company?.vat_number) {
+    if (!company.is_registration_complete) {
       return NextResponse.json(
         { error: "Company registration must be completed before inviting users" },
         { status: 400 }
@@ -141,7 +152,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[v0] Error in invite route:", error)
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }
     )
   }
