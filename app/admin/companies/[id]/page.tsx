@@ -45,7 +45,6 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
     .from("subscriptions")
     .select("*")
     .eq("company_id", params.id)
-    .eq("status", "active")
 
   let adminUser = null
   if (company.admin_user_id) {
@@ -142,6 +141,12 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
+                  <p className="text-sm text-slate-400">Company ID</p>
+                  <p className="text-white font-mono text-sm">
+                    {company.unique_id || <span className="text-slate-600">Not generated</span>}
+                  </p>
+                </div>
+                <div className="space-y-1">
                   <p className="text-sm text-slate-400">Company Name</p>
                   <p className="text-white font-medium">
                     {company.name || <span className="text-slate-600">Not provided</span>}
@@ -191,9 +196,16 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
                 <div className="space-y-1">
                   <p className="text-sm text-slate-400">Contracted Plan</p>
                   {activeSubscription ? (
-                    <Badge className="bg-green-900/30 border-green-700 text-green-400">
-                      {activeSubscription.plan_type}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-green-900/30 border-green-700 text-green-400 capitalize">
+                        {activeSubscription.plan_type}
+                      </Badge>
+                      {activeSubscription.status && (
+                        <span className="text-xs text-slate-500">
+                          ({activeSubscription.status})
+                        </span>
+                      )}
+                    </div>
                   ) : (
                     <p className="text-slate-600">No active plan</p>
                   )}

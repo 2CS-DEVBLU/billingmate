@@ -27,9 +27,13 @@ interface CompanySettingsFormProps {
     state?: string | null
     country?: string | null
   }
+  subscription?: {
+    plan_type: string
+    status: string
+  } | null
 }
 
-export function CompanySettingsForm({ company }: CompanySettingsFormProps) {
+export function CompanySettingsForm({ company, subscription }: CompanySettingsFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -103,6 +107,19 @@ export function CompanySettingsForm({ company }: CompanySettingsFormProps) {
         <CardDescription className="text-slate-400">
           Complete your company registration to access all features
         </CardDescription>
+        {subscription && (
+          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-700">
+            <span className="text-sm text-slate-400">Current Plan:</span>
+            <span className="text-sm font-semibold text-indigo-400 capitalize">
+              {subscription.plan_type}
+            </span>
+            {subscription.status === 'active' && (
+              <span className="text-xs px-2 py-0.5 bg-green-900/30 border border-green-700 text-green-400 rounded">
+                Active
+              </span>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">

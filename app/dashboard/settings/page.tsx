@@ -17,6 +17,13 @@ export default async function SettingsPage() {
     redirect("/auth/login")
   }
 
+  const supabase = await createClient()
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq("company_id", company.id)
+    .maybeSingle()
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
@@ -51,9 +58,14 @@ export default async function SettingsPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white">Company Settings</h1>
           <p className="text-slate-400 mt-2">Manage your company registration details</p>
+          {company?.unique_id && (
+            <p className="text-slate-500 text-sm mt-1">
+              Company ID: <span className="font-mono text-slate-400">{company.unique_id}</span>
+            </p>
+          )}
         </div>
 
-        <CompanySettingsForm company={company} />
+        <CompanySettingsForm company={company} subscription={subscription} />
       </main>
     </div>
   )
