@@ -1,11 +1,11 @@
-import { redirect } from "next/navigation"
+import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { AdminNav } from "@/components/admin-nav"
-import { Eye, ArrowLeft } from "lucide-react"
+import { Eye, ArrowLeft } from 'lucide-react'
 import Link from "next/link"
 
 export default async function CompaniesPage() {
@@ -31,6 +31,7 @@ export default async function CompaniesPage() {
       *,
       subscriptions(*)
     `)
+    .eq("is_platform_owner", false)
     .order("created_at", { ascending: false })
 
   const getActiveSubscription = (company: any) => {
@@ -52,13 +53,13 @@ export default async function CompaniesPage() {
               Back to Dashboard
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold text-white">Companies</h1>
-          <p className="text-slate-400 mt-2">View and manage all companies in the system</p>
+          <h1 className="text-3xl font-bold text-white">Client Companies</h1>
+          <p className="text-slate-400 mt-2">View and manage all client companies in the system</p>
         </div>
 
         <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
           <CardHeader>
-            <CardTitle className="text-white">All Companies</CardTitle>
+            <CardTitle className="text-white">All Client Companies</CardTitle>
             <CardDescription className="text-slate-400">
               {companies?.length || 0} {companies?.length === 1 ? "company" : "companies"} registered
             </CardDescription>
@@ -78,7 +79,7 @@ export default async function CompaniesPage() {
                   {!companies || companies.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center text-slate-500 py-8">
-                        No companies found in the system.
+                        No client companies found in the system.
                       </TableCell>
                     </TableRow>
                   ) : (
