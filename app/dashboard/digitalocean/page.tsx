@@ -17,6 +17,7 @@ import { MonthlyAverageChart } from "@/components/monthly-average-chart"
 import { FinOpsMetrics } from "@/components/finops-metrics"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
+import { Settings } from 'lucide-react'
 
 export default async function DigitalOceanDashboardPage({
   searchParams,
@@ -192,6 +193,14 @@ export default async function DigitalOceanDashboardPage({
           </div>
 
           <div className="flex gap-3 items-center">
+            {isAdmin && (
+              <Link href="/dashboard/integrations/digitalocean">
+                <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Integration Settings
+                </Button>
+              </Link>
+            )}
             <TimeRangeSelector currentRange={timeRange} maxMonths={maxAnalysisMonths} />
             <SyncDataButton integrationId={integration.id} canSync={canSync} cooldownRemaining={cooldownRemaining} />
           </div>
