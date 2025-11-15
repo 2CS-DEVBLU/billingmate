@@ -135,6 +135,21 @@ export function EditCompanyForm({ company, users }: { company: Company; users: U
       <div className="space-y-4 border-t border-slate-700 pt-6">
         <h3 className="text-lg font-semibold text-white">Company Details</h3>
         
+        <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-slate-300">
+              Company Name *
+            </Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="company_size" className="text-slate-300">
@@ -203,21 +218,6 @@ export function EditCompanyForm({ company, users }: { company: Company; users: U
               </SelectContent>
             </Select>
           </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-slate-300">
-            Company Name *
-          </Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-            className="bg-slate-800 border-slate-700 text-white"
-          />
         </div>
       </div>
 
