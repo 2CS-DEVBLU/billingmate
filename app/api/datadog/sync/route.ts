@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
     const syncResults = []
     let totalRecords = 0
     let totalErrors = 0
+    let permissionErrors = 0
 
     for (let i = 0; i < 12; i++) {
       const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
@@ -199,11 +200,47 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error("[v0] Error syncing month", year, month, error)
         totalErrors++
+        
+        const errorMessage = error instanceof Error ? error.message : "Unknown error"
+        if (errorMessage.includes("403") || errorMessage.includes("permission")) {
+          permissionErrors++
+        }
+        
         syncResults.push({
           period: `${year}-${String(month).padStart(2, "0")}-01`,
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: errorMessage,
         })
       }
+    }
+
+    if (permissionErrors > 0 && permissionErrors === totalErrors) {
+      if (logId) {
+        await supabase
+          .from("sync_logs")
+          .update({
+            status: "failed",
+            completed_at: new Date().toISOString(),
+            duration_seconds: Math.floor((Date.now() - startTime) / 1000),
+            errors_count: totalErrors,
+            error_message: "Permission denied - API keys missing required scopes",
+          })
+          .eq("id", logId)
+      }
+
+      return NextResponse.json(
+        {
+          error: "Permission Denied",
+          message: "Your Datadog API keys do not have the required permissions to access billing data.",
+          details: "Please ensure your API and Application keys have the following scopes enabled:",
+          requiredScopes: [
+            "billing_read - Required to access billing and cost data",
+            "usage_read - Required to access usage metrics and historical data"
+          ],
+          instructions: "Update your API keys in Datadog under Organization Settings → API Keys / Application Keys, then reconnect the integration.",
+          results: syncResults,
+        },
+        { status: 403 },
+      )
     }
 
     // Update last_sync timestamp

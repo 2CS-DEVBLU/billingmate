@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { createClient } from "@/lib/supabase/client"
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2, Info } from 'lucide-react'
 
 type DatadogSetupFormProps = {
   companyId: string
@@ -64,10 +64,24 @@ export function DatadogSetupForm({ companyId }: DatadogSetupFormProps) {
         </div>
       </CardHeader>
       <CardContent>
+        <Alert className="mb-6 bg-blue-500/10 border-blue-500/20">
+          <Info className="h-4 w-4 text-blue-400" />
+          <AlertDescription className="text-blue-300 text-sm space-y-2">
+            <p className="font-semibold">Required Permissions:</p>
+            <ul className="list-disc list-inside space-y-1 text-xs">
+              <li><strong>billing_read</strong> - Required to access billing and cost data</li>
+              <li><strong>usage_read</strong> - Required to access usage metrics and historical data</li>
+            </ul>
+            <p className="text-xs text-blue-400 mt-2">
+              Make sure your API and Application keys have these scopes enabled in your Datadog account under Organization Settings.
+            </p>
+          </AlertDescription>
+        </Alert>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="apiKey" className="text-slate-200">
-              API Key
+              API Key <span className="text-red-400">*</span>
             </Label>
             <Input
               id="apiKey"
@@ -79,13 +93,13 @@ export function DatadogSetupForm({ companyId }: DatadogSetupFormProps) {
               className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
             />
             <p className="text-xs text-slate-500">
-              You can generate an API key from your Datadog account under Organization Settings → API Keys
+              Generate from: <strong>Organization Settings → API Keys</strong>
             </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="appKey" className="text-slate-200">
-              Application Key
+              Application Key <span className="text-red-400">*</span>
             </Label>
             <Input
               id="appKey"
@@ -97,7 +111,7 @@ export function DatadogSetupForm({ companyId }: DatadogSetupFormProps) {
               className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
             />
             <p className="text-xs text-slate-500">
-              Application keys can be created under Organization Settings → Application Keys
+              Generate from: <strong>Organization Settings → Application Keys</strong>
             </p>
           </div>
 
