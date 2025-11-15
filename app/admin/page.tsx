@@ -19,8 +19,9 @@ import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AdminNav } from "@/components/admin-nav"
-import { Settings, Eye, Building2, Users } from 'lucide-react'
+import { Settings, Eye, Building2, Users, DollarSign, TrendingUp } from 'lucide-react'
 import Link from "next/link"
+import { PRODUCTS } from "@/lib/products"
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
@@ -66,6 +67,38 @@ export default async function AdminDashboard() {
     }
     return company.subscriptions.find((sub: any) => sub.status === "active")
   }
+
+  const calculateBillingMetrics = () => {
+    let monthlyRecurringRevenue = 0
+    let activeSubscriptions = 0
+    let trialUsers = 0
+
+    filteredCompanies.forEach(company => {
+      const subscription = getActiveSubscription(company)
+      if (subscription) {
+        activeSubscriptions++
+        const product = PRODUCTS.find(p => p.id === subscription.plan_type)
+        if (product) {
+          monthlyRecurringRevenue += product.priceInCents / 100
+        }
+      } else {
+        trialUsers++
+      }
+    })
+
+    const yearlyForecast = monthlyRecurringRevenue * 12
+    const potentialFromTrials = trialUsers * (PRODUCTS.find(p => p.id === 'starter')?.priceInCents || 0) / 100
+
+    return {
+      monthlyRecurringRevenue,
+      activeSubscriptions,
+      trialUsers,
+      yearlyForecast,
+      potentialFromTrials
+    }
+  }
+
+  const billingMetrics = calculateBillingMetrics()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
@@ -151,6 +184,161 @@ export default async function AdminDashboard() {
           </Card>
         </div>
 
+        <div className="mt-8 grid gap-6 md:grid-cols-2 max-w-6xl">
+          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <DollarSign className="h-6 w-6 text-green-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-white">Monthly Recurring Revenue</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Current active subscriptions
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-4xl font-bold text-green-400">
+                    ${billingMetrics.monthlyRecurringRevenue.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-slate-400 mt-1">
+                    {billingMetrics.activeSubscriptions} active subscription{billingMetrics.activeSubscriptions !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-slate-800">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Trial Users:</span>
+                    <span className="text-white font-medium">{billingMetrics.trialUsers}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                  <TrendingUp className="h-6 w-6 text-amber-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-white">Revenue Forecast</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Projected annual revenue
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-4xl font-bold text-amber-400">
+                    ${billingMetrics.yearlyForecast.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Based on current subscriptions
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-slate-800">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Potential from trials:</span>
+                    <span className="text-green-400 font-medium">+${billingMetrics.potentialFromTrials.toFixed(2)}/mo</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-8">
+          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
+            <CardHeader>
+              <CardTitle className="text-white">Billing Overview</CardTitle>
+              <CardDescription className="text-slate-400">
+                Detailed breakdown of company subscriptions and revenue
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border border-slate-800">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-slate-800 hover:bg-slate-800/50">
+                      <TableHead className="text-slate-300">Company</TableHead>
+                      <TableHead className="text-slate-300">Plan</TableHead>
+                      <TableHead className="text-slate-300">Status</TableHead>
+                      <TableHead className="text-slate-300 text-right">Monthly Revenue</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {!filteredCompanies || filteredCompanies.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-slate-500 py-8">
+                          No companies found in the system.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredCompanies.map((company) => {
+                        const subscription = getActiveSubscription(company)
+                        const product = subscription ? PRODUCTS.find(p => p.id === subscription.plan_type) : null
+                        const monthlyRevenue = product ? product.priceInCents / 100 : 0
+
+                        return (
+                          <TableRow key={company.id} className="border-slate-800 hover:bg-slate-800/50">
+                            <TableCell className="font-medium text-white">{company.name}</TableCell>
+                            <TableCell>
+                              {subscription ? (
+                                <Badge className="bg-indigo-900/30 border-indigo-700 text-indigo-400">
+                                  {product?.name || subscription.plan_type}
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-slate-800 border-slate-700 text-slate-400">
+                                  Trial
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {subscription?.status === "active" ? (
+                                <Badge className="bg-green-900/30 border-green-700 text-green-400">
+                                  Active
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-amber-900/30 border-amber-700 text-amber-400">
+                                  Trial
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right font-medium text-white">
+                              {monthlyRevenue > 0 ? (
+                                <span className="text-green-400">${monthlyRevenue.toFixed(2)}</span>
+                              ) : (
+                                <span className="text-slate-500">$0.00</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
+                  </TableBody>
+                  {filteredCompanies && filteredCompanies.length > 0 && (
+                    <TableFooter>
+                      <TableRow className="border-slate-800 bg-slate-800/50">
+                        <TableCell colSpan={3} className="font-bold text-white">Total Monthly Revenue</TableCell>
+                        <TableCell className="text-right font-bold text-green-400">
+                          ${billingMetrics.monthlyRecurringRevenue.toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    </TableFooter>
+                  )}
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Companies table section */}
         <div className="mt-8">
           <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
@@ -191,7 +379,7 @@ export default async function AdminDashboard() {
                             <TableCell>
                               {subscription ? (
                                 <Badge className="bg-green-900/30 border-green-700 text-green-400">
-                                  {subscription.plan_name}
+                                  {subscription.plan_type}
                                 </Badge>
                               ) : (
                                 <span className="text-slate-500">No active plan</span>
