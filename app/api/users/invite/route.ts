@@ -129,11 +129,51 @@ export async function POST(request: Request) {
 
     console.log("[v0] Existing invite:", existingInvite)
 
-    if (existingInvite && existingInvite.status === 'pending') {
-      return NextResponse.json(
-        { error: "An invitation has already been sent to this email" },
-        { status: 400 }
-      )
+    if (existingInvite) {
+      if (existingInvite.status === 'pending') {
+        // Update existing pending invitation with new token and expiry
+        console.log("[v0] Updating existing pending invitation...")
+        const tokenArray = new Uint8Array(32)
+        crypto.getRandomValues(tokenArray)
+        const token = Array.from(tokenArray)
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('')
+
+        const { data: updatedInvite, error: updateError } = await supabase
+          .from("user_invitations")
+          .update({
+            role,
+            token,
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            invited_by: user.id,
+          })
+          .eq("id", existingInvite.id)
+          .select()
+          .single()
+
+        if (updateError) {
+          console.error("[v0] Error updating invitation:", updateError)
+          return NextResponse.json({ error: "Failed to resend invitation" }, { status: 500 })
+        }
+
+        console.log("[v0] Invitation updated:", updatedInvite)
+        const invitationUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/accept-invite?token=${token}`
+
+        return NextResponse.json({
+          success: true,
+          invitation: updatedInvite,
+          invitationUrl,
+          resent: true,
+        })
+      }
+      
+      // If invitation was accepted, they're already a user - handled by existingUser check above
+      // If invitation was rejected or expired, allow creating a new one
+      console.log("[v0] Deleting old rejected/expired invitation...")
+      await supabase
+        .from("user_invitations")
+        .delete()
+        .eq("id", existingInvite.id)
     }
 
     console.log("[v0] Generating invitation token...")

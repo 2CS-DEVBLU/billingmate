@@ -77,8 +77,10 @@ export function InviteUserDialog({ open, onOpenChange }: InviteUserDialogProps) 
       }
 
       toast({
-        title: "Invitation sent",
-        description: `An invitation has been sent to ${email}`,
+        title: data.resent ? "Invitation resent" : "Invitation sent",
+        description: data.resent 
+          ? `A new invitation has been sent to ${email}`
+          : `An invitation has been sent to ${email}`,
       })
 
       setEmail("")
