@@ -39,7 +39,10 @@ export default async function AdminDashboard() {
     redirect("/dashboard")
   }
 
-  const { count: companiesCount } = await supabase.from("companies").select("*", { count: "exact", head: true })
+  const { count: companiesCount } = await supabase
+    .from("companies")
+    .select("*", { count: "exact", head: true })
+    .or("is_platform_owner.is.null,is_platform_owner.eq.false")
 
   const { count: usersCount } = await supabase.from("profiles").select("*", { count: "exact", head: true })
 
@@ -49,7 +52,13 @@ export default async function AdminDashboard() {
       *,
       subscriptions(*)
     `)
+    .or("is_platform_owner.is.null,is_platform_owner.eq.false")
     .order("created_at", { ascending: false })
+
+  const filteredCompanies = companies?.filter(company => 
+    !company.is_platform_owner && 
+    !company.name?.toLowerCase().includes('2cs')
+  ) || []
 
   const getActiveSubscription = (company: any) => {
     if (!company.subscriptions || company.subscriptions.length === 0) {
@@ -148,7 +157,7 @@ export default async function AdminDashboard() {
             <CardHeader>
               <CardTitle className="text-white">Companies</CardTitle>
               <CardDescription className="text-slate-400">
-                {companies?.length || 0} {companies?.length === 1 ? "company" : "companies"} registered
+                {filteredCompanies.length} {filteredCompanies.length === 1 ? "company" : "companies"} registered
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -163,14 +172,14 @@ export default async function AdminDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {!companies || companies.length === 0 ? (
+                    {!filteredCompanies || filteredCompanies.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center text-slate-500 py-8">
                           No companies found in the system.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      companies.map((company) => {
+                      filteredCompanies.map((company) => {
                         const subscription = getActiveSubscription(company)
 
                         return (
