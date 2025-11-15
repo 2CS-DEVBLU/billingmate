@@ -39,6 +39,8 @@ interface CompanySettingsFormProps {
     city?: string | null
     state?: string | null
     country?: string | null
+    state_registration?: string | null
+    municipal_registration?: string | null
   }
   subscription?: {
     plan_type: string
@@ -69,6 +71,8 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
     city: company.city || "",
     state: company.state || "",
     country: company.country || "",
+    state_registration: company.state_registration || "",
+    municipal_registration: company.municipal_registration || "",
   })
 
   const hasAddress = formData.street && formData.city && formData.state && formData.country
@@ -244,7 +248,7 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
             />
           </div>
 
-          <div className="space-y-2 md:col-span-2">
+          <div className="space-y-2">
             <Label htmlFor="area_of_operation" className="text-slate-300">
               Area of Operation
             </Label>
@@ -254,6 +258,17 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
               onChange={(e) => setFormData({ ...formData, area_of_operation: e.target.value })}
               placeholder="e.g., Cloud Computing, SaaS"
               className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-slate-300">
+              Administrator User
+            </Label>
+            <Input
+              value={isAdmin ? "Platform Admin" : "Company Admin"}
+              disabled
+              className="bg-slate-800/50 border-slate-700 text-slate-400"
             />
           </div>
         </div>
@@ -395,20 +410,50 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {isBrazil ? (
-              <div className="space-y-2">
-                <Label htmlFor="cnpj_cpf" className="text-slate-300">
-                  CNPJ / CPF *
-                </Label>
-                <Input
-                  id="cnpj_cpf"
-                  value={formData.cnpj_cpf}
-                  onChange={(e) => setFormData({ ...formData, cnpj_cpf: e.target.value })}
-                  placeholder="00.000.000/0000-00 or 000.000.000-00"
-                  className="bg-slate-800 border-slate-700 text-white"
-                  required
-                />
-                <p className="text-xs text-slate-400">Required for Brazilian companies</p>
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="cnpj_cpf" className="text-slate-300">
+                    CNPJ / CPF *
+                  </Label>
+                  <Input
+                    id="cnpj_cpf"
+                    value={formData.cnpj_cpf}
+                    onChange={(e) => setFormData({ ...formData, cnpj_cpf: e.target.value })}
+                    placeholder="00.000.000/0000-00 or 000.000.000-00"
+                    className="bg-slate-800 border-slate-700 text-white"
+                    required
+                  />
+                  <p className="text-xs text-slate-400">Required for Brazilian companies</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="state_registration" className="text-slate-300">
+                    State Registration (IE)
+                  </Label>
+                  <Input
+                    id="state_registration"
+                    value={formData.state_registration}
+                    onChange={(e) => setFormData({ ...formData, state_registration: e.target.value })}
+                    placeholder="Enter State Registration"
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                  <p className="text-xs text-slate-400">Inscrição Estadual (optional)</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="municipal_registration" className="text-slate-300">
+                    Municipal Registration (IM)
+                  </Label>
+                  <Input
+                    id="municipal_registration"
+                    value={formData.municipal_registration}
+                    onChange={(e) => setFormData({ ...formData, municipal_registration: e.target.value })}
+                    placeholder="Enter Municipal Registration"
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                  <p className="text-xs text-slate-400">Inscrição Municipal (optional)</p>
+                </div>
+              </>
             ) : (
               <div className="space-y-2">
                 <Label htmlFor="vat_number" className="text-slate-300">
