@@ -23,7 +23,7 @@ export interface ResourceCost {
 export class DatadogAPI {
   private apiKey: string
   private appKey: string
-  private baseUrl = "https://api.datadoghq.com/api/v2"
+  private baseUrl = "https://api.datadoghq.com"
 
   constructor(config: DatadogConfig) {
     this.apiKey = config.apiKey
@@ -31,7 +31,10 @@ export class DatadogAPI {
   }
 
   private async fetch(endpoint: string) {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const url = `${this.baseUrl}${endpoint}`
+    console.log("[v0] Fetching from:", url)
+    
+    const response = await fetch(url, {
       headers: {
         "DD-API-KEY": this.apiKey,
         "DD-APPLICATION-KEY": this.appKey,
@@ -40,62 +43,45 @@ export class DatadogAPI {
     })
 
     if (!response.ok) {
+      const body = await response.text()
+      console.error("[v0] Datadog API error:", response.status, body)
       throw new Error(`Datadog API error: ${response.status} ${response.statusText}`)
     }
 
     return response.json()
   }
 
-  // Get usage data for monitoring
-  async getUsageSummary(startDate: string, endDate: string) {
-    console.log("[v0] Fetching Datadog usage summary from", startDate, "to", endDate)
-    return this.fetch(`/usage/summary?start_date=${startDate}&end_date=${endDate}`)
+  // Get historical cost data (v2 endpoint)
+  async getHistoricalCost(startMonth: string, endMonth?: string) {
+    console.log("[v0] Fetching historical cost from", startMonth, "to", endMonth || startMonth)
+    const endpoint = endMonth 
+      ? `/api/v2/usage/historical_cost?start_month=${startMonth}&end_month=${endMonth}`
+      : `/api/v2/usage/historical_cost?start_month=${startMonth}`
+    return this.fetch(endpoint)
   }
 
-  // Get hosts usage
-  async getHostsUsage(startDate: string, endDate: string) {
-    console.log("[v0] Fetching hosts usage")
-    return this.fetch(`/usage/hosts?start_date=${startDate}&end_date=${endDate}`)
+  // Get estimated cost for current/previous month
+  async getEstimatedCost() {
+    console.log("[v0] Fetching estimated cost")
+    return this.fetch(`/api/v2/usage/estimated_cost`)
   }
 
-  // Get logs usage
-  async getLogsUsage(startDate: string, endDate: string) {
-    console.log("[v0] Fetching logs usage")
-    return this.fetch(`/usage/logs?start_date=${startDate}&end_date=${endDate}`)
+  // Get projected cost
+  async getProjectedCost() {
+    console.log("[v0] Fetching projected cost")
+    return this.fetch(`/api/v2/usage/projected_cost`)
   }
 
-  // Get metrics usage
-  async getMetricsUsage(startDate: string, endDate: string) {
-    console.log("[v0] Fetching metrics usage")
-    return this.fetch(`/usage/timeseries?start_date=${startDate}&end_date=${endDate}`)
+  // Get billable summary (v1 endpoint)
+  async getBillableSummary(month: string) {
+    console.log("[v0] Fetching billable summary for", month)
+    return this.fetch(`/api/v1/usage/billable-summary?month=${month}`)
   }
 
-  // Get APM usage
-  async getAPMUsage(startDate: string, endDate: string) {
-    console.log("[v0] Fetching APM usage")
-    return this.fetch(`/usage/traces?start_date=${startDate}&end_date=${endDate}`)
-  }
-
-  // Get synthetics usage
-  async getSyntheticsUsage(startDate: string, endDate: string) {
-    console.log("[v0] Fetching synthetics usage")
-    return this.fetch(`/usage/synthetics?start_date=${startDate}&end_date=${endDate}`)
-  }
-
-  // Get RUM (Real User Monitoring) usage
-  async getRUMUsage(startDate: string, endDate: string) {
-    console.log("[v0] Fetching RUM usage")
-    return this.fetch(`/usage/rum_sessions?start_date=${startDate}&end_date=${endDate}`)
-  }
-
-  // Pricing estimates based on Datadog pricing (approximate)
-  private readonly PRICING = {
-    host_per_month: 15, // Infrastructure monitoring per host
-    apm_host_per_month: 31, // APM per host
-    logs_per_gb: 0.10, // Log management per GB ingested
-    metrics_per_million: 0.05, // Custom metrics per million
-    synthetics_per_test: 5, // Synthetics per test per month
-    rum_per_1k_sessions: 1.5, // RUM per 1,000 sessions
+  // Get billing dimension mapping
+  async getBillingDimensionMapping() {
+    console.log("[v0] Fetching billing dimension mapping")
+    return this.fetch(`/api/v2/usage/billing_dimension_mapping`)
   }
 
   // Fetch comprehensive billing data with resource breakdown
@@ -103,160 +89,121 @@ export class DatadogAPI {
     console.log("[v0] Fetching Datadog billing data for", year, month)
 
     try {
-      // Calculate date range for the month
-      const startDate = new Date(year, month - 1, 1)
-      const endDate = new Date(year, month, 0)
-      const startDateStr = startDate.toISOString().split("T")[0]
-      const endDateStr = endDate.toISOString().split("T")[0]
-
-      // Fetch all usage data in parallel
-      const [hostsUsage, logsUsage, metricsUsage, apmUsage, syntheticsUsage, rumUsage] = await Promise.all([
-        this.getHostsUsage(startDateStr, endDateStr).catch(() => ({ usage: [] })),
-        this.getLogsUsage(startDateStr, endDateStr).catch(() => ({ usage: [] })),
-        this.getMetricsUsage(startDateStr, endDateStr).catch(() => ({ usage: [] })),
-        this.getAPMUsage(startDateStr, endDateStr).catch(() => ({ usage: [] })),
-        this.getSyntheticsUsage(startDateStr, endDateStr).catch(() => ({ usage: [] })),
-        this.getRUMUsage(startDateStr, endDateStr).catch(() => ({ usage: [] })),
-      ])
-
-      console.log("[v0] Fetched usage data for all Datadog services")
-
+      const monthStr = `${year}-${String(month).padStart(2, "0")}`
       const resources: ResourceCost[] = []
       let totalCost = 0
 
-      // Process hosts usage
-      if (hostsUsage.usage && hostsUsage.usage.length > 0) {
-        const totalHosts = hostsUsage.usage.reduce((sum: number, day: any) => {
-          return sum + (day.host_count || 0)
-        }, 0)
-        const avgHosts = Math.ceil(totalHosts / hostsUsage.usage.length)
-        const hostsCost = avgHosts * this.PRICING.host_per_month
+      // Fetch historical cost for this specific month
+      const historicalData = await this.getHistoricalCost(monthStr).catch((error) => {
+        console.error("[v0] Error fetching historical cost:", error)
+        return null
+      })
 
-        if (avgHosts > 0) {
-          resources.push({
-            resource_type: "infrastructure",
-            resource_id: "hosts-monitoring",
-            resource_name: `Infrastructure Monitoring (${avgHosts} hosts)`,
-            cost: hostsCost,
-            metadata: {
-              avg_hosts: avgHosts,
-              product: "Infrastructure Monitoring",
-            },
-          })
-          totalCost += hostsCost
+      if (historicalData && historicalData.data) {
+        // Process historical cost data
+        for (const item of historicalData.data) {
+          if (item.date === monthStr) {
+            // Extract charges by product
+            const charges = item.charges || []
+            
+            for (const charge of charges) {
+              const productName = charge.product_name || charge.charge_type || "Unknown Product"
+              const cost = parseFloat(charge.charge_amount || charge.cost || 0)
+              
+              if (cost > 0) {
+                resources.push({
+                  resource_type: charge.charge_type || "usage",
+                  resource_id: charge.product_name?.toLowerCase().replace(/\s+/g, "-") || "unknown",
+                  resource_name: productName,
+                  cost: cost,
+                  metadata: {
+                    product: productName,
+                    charge_type: charge.charge_type,
+                    usage_type: charge.usage_type,
+                    org_name: charge.org_name,
+                  },
+                })
+                totalCost += cost
+              }
+            }
+          }
         }
       }
 
-      // Process APM usage
-      if (apmUsage.usage && apmUsage.usage.length > 0) {
-        const totalAPMHosts = apmUsage.usage.reduce((sum: number, day: any) => {
-          return sum + (day.apm_host_count || 0)
-        }, 0)
-        const avgAPMHosts = Math.ceil(totalAPMHosts / apmUsage.usage.length)
-        const apmCost = avgAPMHosts * this.PRICING.apm_host_per_month
+      // If historical data is not available or current month, try billable summary
+      if (resources.length === 0) {
+        const summaryData = await this.getBillableSummary(monthStr).catch((error) => {
+          console.error("[v0] Error fetching billable summary:", error)
+          return null
+        })
 
-        if (avgAPMHosts > 0) {
-          resources.push({
-            resource_type: "apm",
-            resource_id: "apm-monitoring",
-            resource_name: `APM & Distributed Tracing (${avgAPMHosts} hosts)`,
-            cost: apmCost,
-            metadata: {
-              avg_apm_hosts: avgAPMHosts,
-              product: "APM",
-            },
-          })
-          totalCost += apmCost
-        }
-      }
+        if (summaryData && summaryData.usage) {
+          // Process billable summary data
+          const usage = summaryData.usage
+          
+          // Infrastructure monitoring
+          if (usage.infra_hosts) {
+            const infraCost = usage.infra_hosts * 15 // Approximate cost
+            resources.push({
+              resource_type: "infrastructure",
+              resource_id: "infra-hosts",
+              resource_name: `Infrastructure Monitoring (${usage.infra_hosts} hosts)`,
+              cost: infraCost,
+              metadata: {
+                product: "Infrastructure Monitoring",
+                host_count: usage.infra_hosts,
+              },
+            })
+            totalCost += infraCost
+          }
 
-      // Process logs usage
-      if (logsUsage.usage && logsUsage.usage.length > 0) {
-        const totalLogsGB = logsUsage.usage.reduce((sum: number, day: any) => {
-          return sum + (day.ingested_logs_bytes || 0) / (1024 * 1024 * 1024)
-        }, 0)
-        const logsCost = totalLogsGB * this.PRICING.logs_per_gb
+          // APM
+          if (usage.apm_hosts) {
+            const apmCost = usage.apm_hosts * 31
+            resources.push({
+              resource_type: "apm",
+              resource_id: "apm-hosts",
+              resource_name: `APM (${usage.apm_hosts} hosts)`,
+              cost: apmCost,
+              metadata: {
+                product: "APM",
+                host_count: usage.apm_hosts,
+              },
+            })
+            totalCost += apmCost
+          }
 
-        if (totalLogsGB > 0) {
-          resources.push({
-            resource_type: "logs",
-            resource_id: "logs-management",
-            resource_name: `Log Management (${totalLogsGB.toFixed(2)} GB)`,
-            cost: logsCost,
-            metadata: {
-              total_gb: totalLogsGB,
-              product: "Log Management",
-            },
-          })
-          totalCost += logsCost
-        }
-      }
+          // Logs
+          if (usage.indexed_logs_usage) {
+            const logsCost = usage.indexed_logs_usage * 0.10
+            resources.push({
+              resource_type: "logs",
+              resource_id: "logs-indexed",
+              resource_name: `Log Management (${usage.indexed_logs_usage.toFixed(2)} GB)`,
+              cost: logsCost,
+              metadata: {
+                product: "Log Management",
+                gb_indexed: usage.indexed_logs_usage,
+              },
+            })
+            totalCost += logsCost
+          }
 
-      // Process metrics usage
-      if (metricsUsage.usage && metricsUsage.usage.length > 0) {
-        const totalMetrics = metricsUsage.usage.reduce((sum: number, day: any) => {
-          return sum + (day.num_custom_timeseries || 0)
-        }, 0)
-        const avgMetrics = totalMetrics / metricsUsage.usage.length
-        const metricsCost = (avgMetrics / 1000000) * this.PRICING.metrics_per_million
-
-        if (avgMetrics > 0) {
-          resources.push({
-            resource_type: "metrics",
-            resource_id: "custom-metrics",
-            resource_name: `Custom Metrics (${Math.round(avgMetrics).toLocaleString()})`,
-            cost: metricsCost,
-            metadata: {
-              avg_metrics: avgMetrics,
-              product: "Custom Metrics",
-            },
-          })
-          totalCost += metricsCost
-        }
-      }
-
-      // Process synthetics usage
-      if (syntheticsUsage.usage && syntheticsUsage.usage.length > 0) {
-        const totalTests = syntheticsUsage.usage.reduce((sum: number, day: any) => {
-          return sum + (day.check_calls_count || 0)
-        }, 0)
-        const avgTests = Math.ceil(totalTests / syntheticsUsage.usage.length / 30) // Approximate tests per day to monthly
-        const syntheticsCost = avgTests * this.PRICING.synthetics_per_test
-
-        if (avgTests > 0) {
-          resources.push({
-            resource_type: "synthetics",
-            resource_id: "synthetics-monitoring",
-            resource_name: `Synthetic Monitoring (${avgTests} tests)`,
-            cost: syntheticsCost,
-            metadata: {
-              avg_tests: avgTests,
-              product: "Synthetic Monitoring",
-            },
-          })
-          totalCost += syntheticsCost
-        }
-      }
-
-      // Process RUM usage
-      if (rumUsage.usage && rumUsage.usage.length > 0) {
-        const totalSessions = rumUsage.usage.reduce((sum: number, day: any) => {
-          return sum + (day.session_count || 0)
-        }, 0)
-        const rumCost = (totalSessions / 1000) * this.PRICING.rum_per_1k_sessions
-
-        if (totalSessions > 0) {
-          resources.push({
-            resource_type: "rum",
-            resource_id: "rum-monitoring",
-            resource_name: `Real User Monitoring (${totalSessions.toLocaleString()} sessions)`,
-            cost: rumCost,
-            metadata: {
-              total_sessions: totalSessions,
-              product: "RUM",
-            },
-          })
-          totalCost += rumCost
+          // Custom metrics
+          if (usage.custom_timeseries) {
+            const metricsCost = (usage.custom_timeseries / 1000000) * 0.05
+            resources.push({
+              resource_type: "metrics",
+              resource_id: "custom-metrics",
+              resource_name: `Custom Metrics (${usage.custom_timeseries.toLocaleString()})`,
+              cost: metricsCost,
+              metadata: {
+                product: "Custom Metrics",
+                metric_count: usage.custom_timeseries,
+              },
+            })
+            totalCost += metricsCost
+          }
         }
       }
 
@@ -269,7 +216,12 @@ export class DatadogAPI {
       }
     } catch (error) {
       console.error("[v0] Error fetching Datadog billing data:", error)
-      throw error
+      // Return empty data instead of throwing to allow sync to continue for other months
+      return {
+        billing_period: `${year}-${String(month).padStart(2, "0")}-01`,
+        total_cost: 0,
+        resources: [],
+      }
     }
   }
 
@@ -284,12 +236,12 @@ export class DatadogAPI {
   > {
     const recommendations = []
 
-    // Check for high host count
+    // Check for high infrastructure costs
     const infraResource = billingData.resources.find((r) => r.resource_type === "infrastructure")
     if (infraResource && infraResource.cost > 200) {
       recommendations.push({
         title: "Optimize Infrastructure Monitoring",
-        description: `Your infrastructure monitoring costs are significant. Review host tagging and consider consolidating monitoring for development/staging environments.`,
+        description: `Your infrastructure monitoring costs are significant ($${infraResource.cost.toFixed(2)}). Review host tagging and consider consolidating monitoring for development/staging environments.`,
         potential_savings: infraResource.cost * 0.2,
         priority: "high",
       })
@@ -300,7 +252,7 @@ export class DatadogAPI {
     if (logsResource && logsResource.cost > 100) {
       recommendations.push({
         title: "Reduce Log Ingestion Costs",
-        description: `Log management costs are high. Consider implementing log sampling, filtering noisy logs, or reducing retention periods.`,
+        description: `Log management costs are high ($${logsResource.cost.toFixed(2)}). Consider implementing log sampling, filtering noisy logs, or reducing retention periods.`,
         potential_savings: logsResource.cost * 0.3,
         priority: "high",
       })
@@ -311,7 +263,7 @@ export class DatadogAPI {
     if (metricsResource && metricsResource.cost > 50) {
       recommendations.push({
         title: "Audit Custom Metrics",
-        description: `High custom metrics usage detected. Review and remove unused or redundant metrics to optimize costs.`,
+        description: `High custom metrics usage detected ($${metricsResource.cost.toFixed(2)}). Review and remove unused or redundant metrics to optimize costs.`,
         potential_savings: metricsResource.cost * 0.25,
         priority: "medium",
       })
@@ -322,8 +274,18 @@ export class DatadogAPI {
     if (apmResource && apmResource.cost > 150) {
       recommendations.push({
         title: "Optimize APM Coverage",
-        description: `APM costs are substantial. Consider enabling APM only for production environments or critical services.`,
+        description: `APM costs are substantial ($${apmResource.cost.toFixed(2)}). Consider enabling APM only for production environments or critical services.`,
         potential_savings: apmResource.cost * 0.3,
+        priority: "medium",
+      })
+    }
+
+    // General recommendation if total cost is significant
+    if (billingData.total_cost > 500 && recommendations.length === 0) {
+      recommendations.push({
+        title: "Review Datadog Usage",
+        description: `Your total Datadog costs are $${billingData.total_cost.toFixed(2)}/month. Consider reviewing your usage patterns and optimizing resource allocation.`,
+        potential_savings: billingData.total_cost * 0.15,
         priority: "medium",
       })
     }
