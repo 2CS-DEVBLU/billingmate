@@ -42,10 +42,14 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
     redirect("/admin/companies")
   }
 
-  const { data: subscriptions } = await supabase
+  const { data: subscriptions, error: subError } = await supabase
     .from("subscriptions")
     .select("*")
     .eq("company_id", params.id)
+
+  console.log("[v0] Subscriptions query result:", subscriptions)
+  console.log("[v0] Subscriptions error:", subError)
+  console.log("[v0] Active subscription:", subscriptions?.[0])
 
   let adminUser = null
   if (company.admin_user_id) {
@@ -249,7 +253,14 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
                       )}
                     </div>
                   ) : (
-                    <p className="text-slate-600">No active plan</p>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-blue-900/30 border-blue-700 text-blue-400">
+                        Trial
+                      </Badge>
+                      <span className="text-xs text-slate-500">
+                        (Free tier)
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>
