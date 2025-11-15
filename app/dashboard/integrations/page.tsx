@@ -23,8 +23,8 @@ const AVAILABLE_PROVIDERS = [
     name: "Datadog",
     description: "Track your monitoring and observability costs",
     logo: "🐕",
-    enabled: false,
-    comingSoon: true,
+    enabled: true,
+    comingSoon: false,
   },
   {
     id: "aws",

@@ -21,7 +21,6 @@ const AVAILABLE_PROVIDERS = [
     name: "Datadog",
     description: "Track your monitoring and observability costs",
     logo: "🐕",
-    comingSoon: true,
   },
   {
     id: "aws",
