@@ -116,8 +116,7 @@ export function EditCompanyForm({ company, users }: { company: Company; users: U
     }
   }
 
-  const hasCountry = formData.country_code !== ""
-  const hasAddress = formData.street && formData.city && formData.country
+  const hasAddress = formData.street && formData.city && formData.state && formData.country
   const isBrazil = formData.country_code === "BR"
 
   return (
@@ -133,7 +132,7 @@ export function EditCompanyForm({ company, users }: { company: Company; users: U
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="space-y-2">
           <Label htmlFor="name" className="text-slate-300">
             Company Name *
@@ -146,206 +145,201 @@ export function EditCompanyForm({ company, users }: { company: Company; users: U
             className="bg-slate-800 border-slate-700 text-white"
           />
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="country_code" className="text-slate-300">
-            Country *
-          </Label>
-          <Select
-            value={formData.country_code}
-            onValueChange={(value) => setFormData({ ...formData, country_code: value })}
-          >
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-              <SelectValue placeholder="Select country" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700">
-              <SelectItem value="BR">Brazil</SelectItem>
-              <SelectItem value="US">United States</SelectItem>
-              <SelectItem value="GB">United Kingdom</SelectItem>
-              <SelectItem value="DE">Germany</SelectItem>
-              <SelectItem value="FR">France</SelectItem>
-              <SelectItem value="CA">Canada</SelectItem>
-              <SelectItem value="AU">Australia</SelectItem>
-              <SelectItem value="OTHER">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {hasCountry && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="company_size" className="text-slate-300">
-                Company Size
-              </Label>
-              <Select
-                value={formData.company_size}
-                onValueChange={(value) => setFormData({ ...formData, company_size: value })}
-              >
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                  <SelectValue placeholder="Select size" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1-10">1-10 employees</SelectItem>
-                  <SelectItem value="11-50">11-50 employees</SelectItem>
-                  <SelectItem value="51-200">51-200 employees</SelectItem>
-                  <SelectItem value="201-500">201-500 employees</SelectItem>
-                  <SelectItem value="501+">501+ employees</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="industry" className="text-slate-300">
-                Industry
-              </Label>
-              <Input
-                id="industry"
-                value={formData.industry}
-                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                placeholder="e.g., Technology, Healthcare"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="area_of_operation" className="text-slate-300">
-                Area of Operation
-              </Label>
-              <Input
-                id="area_of_operation"
-                value={formData.area_of_operation}
-                onChange={(e) => setFormData({ ...formData, area_of_operation: e.target.value })}
-                placeholder="e.g., Cloud Computing, SaaS"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="admin_user" className="text-slate-300">
-                Administrator User
-              </Label>
-              <Select
-                value={formData.admin_user_id}
-                onValueChange={(value) => setFormData({ ...formData, admin_user_id: value })}
-              >
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                  <SelectValue placeholder="Select admin user" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.full_name || user.email}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        )}
       </div>
 
-      {hasCountry && (
-        <div className="space-y-4 border-t border-slate-700 pt-6">
-          <h3 className="text-lg font-semibold text-white">Address Information</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="street" className="text-slate-300">
-                Street
-              </Label>
-              <Input
-                id="street"
-                value={formData.street}
-                onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                placeholder="Street name"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="number" className="text-slate-300">
-                Number
-              </Label>
-              <Input
-                id="number"
-                value={formData.number}
-                onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                placeholder="123"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
+      <div className="space-y-4 border-t border-slate-700 pt-6">
+        <h3 className="text-lg font-semibold text-white">Address Information</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="street" className="text-slate-300">
+              Street
+            </Label>
+            <Input
+              id="street"
+              value={formData.street}
+              onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+              placeholder="Street name"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="zip_code" className="text-slate-300">
-                Zip Code
-              </Label>
-              <Input
-                id="zip_code"
-                value={formData.zip_code}
-                onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
-                placeholder="12345-678"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="neighborhood" className="text-slate-300">
-                Neighborhood
-              </Label>
-              <Input
-                id="neighborhood"
-                value={formData.neighborhood}
-                onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                placeholder="District/Neighborhood"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city" className="text-slate-300">
-                City
-              </Label>
-              <Input
-                id="city"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="City"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="state" className="text-slate-300">
-                State
-              </Label>
-              <Input
-                id="state"
-                value={formData.state}
-                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                placeholder="State/Province"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="country" className="text-slate-300">
-                Country
-              </Label>
-              <Input
-                id="country"
-                value={formData.country}
-                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                placeholder="Country"
-                className="bg-slate-800 border-slate-700 text-white"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="number" className="text-slate-300">
+              Number
+            </Label>
+            <Input
+              id="number"
+              value={formData.number}
+              onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+              placeholder="123"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
           </div>
         </div>
-      )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="zip_code" className="text-slate-300">
+              Zip Code
+            </Label>
+            <Input
+              id="zip_code"
+              value={formData.zip_code}
+              onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+              placeholder="12345-678"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="neighborhood" className="text-slate-300">
+              Neighborhood
+            </Label>
+            <Input
+              id="neighborhood"
+              value={formData.neighborhood}
+              onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+              placeholder="District/Neighborhood"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="city" className="text-slate-300">
+              City
+            </Label>
+            <Input
+              id="city"
+              value={formData.city}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              placeholder="City"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="state" className="text-slate-300">
+              State
+            </Label>
+            <Input
+              id="state"
+              value={formData.state}
+              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+              placeholder="State/Province"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="country" className="text-slate-300">
+              Country
+            </Label>
+            <Select
+              value={formData.country}
+              onValueChange={(value) => {
+                const countryCodeMap: Record<string, string> = {
+                  'Brazil': 'BR',
+                  'United States': 'US',
+                  'United Kingdom': 'GB',
+                  'Germany': 'DE',
+                  'France': 'FR',
+                  'Canada': 'CA',
+                  'Australia': 'AU',
+                }
+                const code = countryCodeMap[value] || 'OTHER'
+                setFormData(prev => ({ ...prev, country: value, country_code: code }))
+              }}
+            >
+              <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectItem value="Brazil">Brazil</SelectItem>
+                <SelectItem value="United States">United States</SelectItem>
+                <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                <SelectItem value="Germany">Germany</SelectItem>
+                <SelectItem value="France">France</SelectItem>
+                <SelectItem value="Canada">Canada</SelectItem>
+                <SelectItem value="Australia">Australia</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="company_size" className="text-slate-300">
+              Company Size
+            </Label>
+            <Select
+              value={formData.company_size}
+              onValueChange={(value) => setFormData({ ...formData, company_size: value })}
+            >
+              <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectValue placeholder="Select size" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1-10">1-10 employees</SelectItem>
+                <SelectItem value="11-50">11-50 employees</SelectItem>
+                <SelectItem value="51-200">51-200 employees</SelectItem>
+                <SelectItem value="201-500">201-500 employees</SelectItem>
+                <SelectItem value="501+">501+ employees</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="industry" className="text-slate-300">
+              Industry
+            </Label>
+            <Input
+              id="industry"
+              value={formData.industry}
+              onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+              placeholder="e.g., Technology, Healthcare"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="area_of_operation" className="text-slate-300">
+              Area of Operation
+            </Label>
+            <Input
+              id="area_of_operation"
+              value={formData.area_of_operation}
+              onChange={(e) => setFormData({ ...formData, area_of_operation: e.target.value })}
+              placeholder="e.g., Cloud Computing, SaaS"
+              className="bg-slate-800 border-slate-700 text-white"
+            />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="admin_user" className="text-slate-300">
+              Administrator User
+            </Label>
+            <Select
+              value={formData.admin_user_id}
+              onValueChange={(value) => setFormData({ ...formData, admin_user_id: value })}
+            >
+              <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectValue placeholder="Select admin user" />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.full_name || user.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
 
       {hasAddress && (
         <div className="space-y-4 border-t border-slate-700 pt-6">
