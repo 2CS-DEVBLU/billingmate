@@ -8,6 +8,12 @@ import { AdminNav } from "@/components/admin-nav"
 import { Eye, ArrowLeft } from 'lucide-react'
 import Link from "next/link"
 
+const PRODUCTS = [
+  { id: 'basic', name: 'Basic Plan' },
+  { id: 'premium', name: 'Premium Plan' },
+  // Add other products here
+]
+
 export default async function CompaniesPage() {
   const supabase = await createClient()
 
@@ -45,7 +51,8 @@ export default async function CompaniesPage() {
     if (!company.subscriptions || company.subscriptions.length === 0) {
       return null
     }
-    return company.subscriptions.find((sub: any) => sub.status === "active")
+    // Return the most recent subscription regardless of status
+    return company.subscriptions[0]
   }
 
   return (
@@ -102,10 +109,12 @@ export default async function CompaniesPage() {
                           <TableCell>
                             {subscription ? (
                               <Badge className="bg-green-900/30 border-green-700 text-green-400">
-                                {subscription.plan_type}
+                                {PRODUCTS.find(p => p.id === subscription.plan_type)?.name || subscription.plan_type}
                               </Badge>
                             ) : (
-                              <span className="text-slate-500">No active plan</span>
+                              <Badge className="bg-slate-800 border-slate-700 text-slate-400">
+                                Trial (Free)
+                              </Badge>
                             )}
                           </TableCell>
                           <TableCell className="text-right">

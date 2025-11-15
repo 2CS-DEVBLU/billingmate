@@ -65,7 +65,8 @@ export default async function AdminDashboard() {
     if (!company.subscriptions || company.subscriptions.length === 0) {
       return null
     }
-    return company.subscriptions.find((sub: any) => sub.status === "active")
+    // Return the most recent subscription regardless of status
+    return company.subscriptions[0]
   }
 
   const calculateBillingMetrics = () => {
@@ -296,7 +297,7 @@ export default async function AdminDashboard() {
                                 </Badge>
                               ) : (
                                 <Badge className="bg-slate-800 border-slate-700 text-slate-400">
-                                  Trial
+                                  Trial (Free)
                                 </Badge>
                               )}
                             </TableCell>
