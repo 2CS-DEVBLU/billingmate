@@ -28,24 +28,43 @@ export class DatadogAPI {
   constructor(config: DatadogConfig) {
     this.apiKey = config.apiKey
     this.appKey = config.appKey
+    console.log("[v0] Datadog API initialized")
+    console.log("[v0] API Key length:", this.apiKey?.length || 0)
+    console.log("[v0] App Key length:", this.appKey?.length || 0)
+    console.log("[v0] API Key (first 10 chars):", this.apiKey?.substring(0, 10) || "undefined")
+    console.log("[v0] App Key (first 10 chars):", this.appKey?.substring(0, 10) || "undefined")
   }
 
   private async fetch(endpoint: string) {
     const url = `${this.baseUrl}${endpoint}`
-    console.log("[v0] Fetching from:", url)
+    
+    const headers = {
+      "DD-API-KEY": this.apiKey,
+      "DD-APPLICATION-KEY": this.appKey,
+      "Content-Type": "application/json",
+    }
+    
+    console.log("[v0] ========== DATADOG API REQUEST ==========")
+    console.log("[v0] URL:", url)
+    console.log("[v0] Headers being sent:")
+    console.log("[v0]   DD-API-KEY:", this.apiKey?.substring(0, 15) + "..." || "undefined")
+    console.log("[v0]   DD-APPLICATION-KEY:", this.appKey?.substring(0, 15) + "..." || "undefined")
+    console.log("[v0]   Content-Type:", headers["Content-Type"])
+    console.log("[v0] Header order: DD-API-KEY (DATADOG_API_KEY), then DD-APPLICATION-KEY (DATADOG_APP_KEY)")
+    console.log("[v0] ==========================================")
     
     const response = await fetch(url, {
-      headers: {
-        "DD-API-KEY": this.apiKey,
-        "DD-APPLICATION-KEY": this.appKey,
-        "Content-Type": "application/json",
-      },
+      headers,
     })
 
     if (!response.ok) {
       const body = await response.text()
-      console.error("[v0] Datadog API error:", response.status, body)
-      throw new Error(`Datadog API error: ${response.status} ${response.statusText}`)
+      console.error("[v0] ========== API ERROR ==========")
+      console.error("[v0] Status:", response.status)
+      console.error("[v0] Status Text:", response.statusText)
+      console.error("[v0] Response Body:", body)
+      console.error("[v0] ===================================")
+      throw new Error(`Datadog API error: ${response.status}`)
     }
 
     return response.json()
