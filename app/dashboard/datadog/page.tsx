@@ -98,7 +98,7 @@ export default async function DatadogDashboardPage({
     .select("*")
     .eq("company_id", profile.company_id)
     .eq("provider", "datadog")
-    .single()
+    .maybeSingle() // Changed from .single() to .maybeSingle() to handle case when integration doesn't exist
 
   console.log("[v0] Datadog Dashboard - Integration:", integration?.id, "Error:", integrationError)
 
