@@ -119,7 +119,9 @@ export async function DELETE(
       )
     }
 
-    // Delete associated data in order (due to foreign key constraints)
+    // Delete associated data in correct order (respecting foreign key constraints)
+    
+    // 1. Delete sync_logs (has integration_id)
     console.log("[v0] Deleting sync_logs...")
     const { error: syncLogsError } = await supabase
       .from("sync_logs")
@@ -127,29 +129,56 @@ export async function DELETE(
       .eq("integration_id", params.integrationId)
 
     if (syncLogsError) {
-      console.error("[v0] Error deleting sync_logs:", syncLogsError)
+      console.error("[v0] Error deleting sync_logs:", syncLogsError.message)
     }
 
-    console.log("[v0] Deleting recommendations...")
-    const { error: recommendationsError } = await supabase
-      .from("recommendations")
-      .delete()
+    // 2. Get cloud_accounts for this integration
+    console.log("[v0] Getting cloud_accounts...")
+    const { data: cloudAccounts } = await supabase
+      .from("cloud_accounts")
+      .select("id")
       .eq("integration_id", params.integrationId)
 
-    if (recommendationsError) {
-      console.error("[v0] Error deleting recommendations:", recommendationsError)
+    const cloudAccountIds = cloudAccounts?.map(acc => acc.id) || []
+    console.log("[v0] Found cloud_account IDs:", cloudAccountIds)
+
+    // 3. Delete recommendations (uses cloud_account_id)
+    if (cloudAccountIds.length > 0) {
+      console.log("[v0] Deleting recommendations...")
+      const { error: recommendationsError } = await supabase
+        .from("recommendations")
+        .delete()
+        .in("cloud_account_id", cloudAccountIds)
+
+      if (recommendationsError) {
+        console.error("[v0] Error deleting recommendations:", recommendationsError.message)
+      }
     }
 
-    console.log("[v0] Deleting resource_costs...")
-    const { error: resourceCostsError } = await supabase
-      .from("resource_costs")
-      .delete()
+    // 4. Get billing_history for this integration
+    console.log("[v0] Getting billing_history...")
+    const { data: billingHistory } = await supabase
+      .from("billing_history")
+      .select("id")
       .eq("integration_id", params.integrationId)
 
-    if (resourceCostsError) {
-      console.error("[v0] Error deleting resource_costs:", resourceCostsError)
+    const billingHistoryIds = billingHistory?.map(bh => bh.id) || []
+    console.log("[v0] Found billing_history IDs:", billingHistoryIds)
+
+    // 5. Delete resource_costs (uses billing_history_id)
+    if (billingHistoryIds.length > 0) {
+      console.log("[v0] Deleting resource_costs...")
+      const { error: resourceCostsError } = await supabase
+        .from("resource_costs")
+        .delete()
+        .in("billing_history_id", billingHistoryIds)
+
+      if (resourceCostsError) {
+        console.error("[v0] Error deleting resource_costs:", resourceCostsError.message)
+      }
     }
 
+    // 6. Delete billing_history (has integration_id)
     console.log("[v0] Deleting billing_history...")
     const { error: billingHistoryError } = await supabase
       .from("billing_history")
@@ -157,10 +186,21 @@ export async function DELETE(
       .eq("integration_id", params.integrationId)
 
     if (billingHistoryError) {
-      console.error("[v0] Error deleting billing_history:", billingHistoryError)
+      console.error("[v0] Error deleting billing_history:", billingHistoryError.message)
     }
 
-    // Finally delete the integration itself
+    // 7. Delete cloud_accounts (has integration_id)
+    console.log("[v0] Deleting cloud_accounts...")
+    const { error: cloudAccountsError } = await supabase
+      .from("cloud_accounts")
+      .delete()
+      .eq("integration_id", params.integrationId)
+
+    if (cloudAccountsError) {
+      console.error("[v0] Error deleting cloud_accounts:", cloudAccountsError.message)
+    }
+
+    // 8. Finally delete the integration itself
     console.log("[v0] Deleting integration...")
     const { error: integrationError } = await supabase
       .from("cloud_integrations")
@@ -169,7 +209,7 @@ export async function DELETE(
       .eq("company_id", profile.company_id)
 
     if (integrationError) {
-      console.error("[v0] Error deleting integration:", integrationError)
+      console.error("[v0] Error deleting integration:", integrationError.message)
       return NextResponse.json(
         { error: "Failed to delete integration" },
         { status: 500 }
