@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { UserPlus, MoreVertical, Mail, Trash2, Shield, Eye, Clock, Users, UserCheck, UserX } from 'lucide-react'
+import { UserPlus, MoreVertical, Mail, Trash2, Shield, Eye, Clock, Users, UserCheck, UserX, Home } from 'lucide-react'
 import { InviteUserDialog } from "@/components/invite-user-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from 'next/navigation'
@@ -196,6 +196,17 @@ export function UserManagementClient({ users, invitations, currentUserId }: User
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => router.push('/dashboard')}
+            className="text-slate-400 hover:text-white hover:bg-slate-800/50 border border-slate-700/50"
+          >
+            <Home className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </div>
+
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-white mb-3">Team Management</h1>
           <p className="text-slate-400 text-lg">Manage your team members, roles, and invitations</p>
