@@ -214,12 +214,11 @@ export async function POST(request: Request) {
     
     console.log("[v0] Invitation URL:", invitationUrl)
 
-    const emailResult = await sendInvitationEmail(
+    const emailResult = await sendInvitationEmail({
       email,
+      companyName: company.name,
       invitationUrl,
-      company.name,
-      profile.full_name || user.email || "A team member"
-    )
+    })
 
     if (!emailResult.success) {
       console.warn("[v0] Email failed to send, but invitation was created")

@@ -71,12 +71,11 @@ export async function POST(
 
     const invitationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/auth/accept-invite?token=${token}`
     
-    const emailResult = await sendInvitationEmail(
-      invitation.email,
+    const emailResult = await sendInvitationEmail({
+      email: invitation.email,
+      companyName: company?.name || "your company",
       invitationUrl,
-      company?.name || "your company",
-      profile.full_name || profile.email || "A team member"
-    )
+    })
 
     console.log("[v0] Invitation resent, email result:", emailResult)
 
