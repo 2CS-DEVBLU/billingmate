@@ -271,16 +271,28 @@ export default async function BillingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-medium">Deactivate Account</h3>
-                <p className="text-sm text-slate-400">
-                  Cancel all subscriptions and deactivate your account. You can reactivate after 30 days.
-                </p>
+            <div className="p-4 rounded-lg border border-red-900/50 bg-red-950/20">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="h-5 w-5 text-red-400" />
+                    <h3 className="text-white font-semibold">Deactivate Account</h3>
+                  </div>
+                  <p className="text-sm text-slate-400">
+                    Cancel all subscriptions and deactivate your account. You can reactivate after 30 days.
+                  </p>
+                  <p className="text-xs text-red-400 mt-2">
+                    Warning: This action will immediately cancel all active integrations and billing.
+                  </p>
+                </div>
+                <Button 
+                  variant="destructive" 
+                  className="bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-lg shadow-red-900/50 transition-all hover:shadow-xl hover:shadow-red-900/70 flex-shrink-0"
+                >
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Deactivate Account
+                </Button>
               </div>
-              <Button variant="destructive" className="bg-red-600 hover:bg-red-700">
-                Deactivate Account
-              </Button>
             </div>
           </CardContent>
         </Card>

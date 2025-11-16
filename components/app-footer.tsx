@@ -9,18 +9,35 @@ export function AppFooter() {
   })
 
   return (
-    <footer className="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex min-h-16 items-center justify-center py-4">
-        <div className="flex flex-col items-center gap-2 text-center text-xs text-muted-foreground">
-          <p className="font-medium">
-            © 2025 BillingMate. All rights reserved.
-          </p>
-          <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
-            <p>
-              BillingMate v{version} • Deployed {deploymentDate}
+    <footer className="mt-auto border-t border-slate-800 bg-slate-950/80 backdrop-blur-sm">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col items-center gap-4 text-center">
+          {/* Main copyright */}
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+              <span className="text-white font-bold text-sm">BM</span>
+            </div>
+            <span className="text-white font-semibold text-lg">BillingMate</span>
+          </div>
+          
+          {/* Version and deployment info */}
+          <div className="flex flex-col items-center gap-2 text-sm text-slate-400">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-1 rounded bg-slate-800 text-slate-300 font-mono text-xs">
+                v{version}
+              </span>
+              <span>•</span>
+              <span>Deployed {deploymentDate}</span>
+            </div>
+          </div>
+
+          {/* Copyright and powered by */}
+          <div className="flex flex-col items-center gap-1 text-xs text-slate-500">
+            <p>© 2025 BillingMate. All rights reserved.</p>
+            <p className="flex items-center gap-1">
+              Powered by
+              <span className="text-indigo-400 font-medium">2CS Consulting</span>
             </p>
-            <span className="hidden sm:inline">•</span>
-            <p>Powered by 2CS Consulting</p>
           </div>
         </div>
       </div>

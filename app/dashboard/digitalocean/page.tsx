@@ -195,7 +195,10 @@ export default async function DigitalOceanDashboardPage({
           <div className="flex gap-3 items-center">
             {isAdmin && (
               <Link href="/dashboard/integrations/digitalocean">
-                <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
+                <Button 
+                  variant="outline" 
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-500 transition-all"
+                >
                   <Settings className="h-4 w-4 mr-2" />
                   Integration Settings
                 </Button>
