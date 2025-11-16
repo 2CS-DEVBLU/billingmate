@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Eye, EyeOff, Trash2, Save, AlertTriangle, Settings2, Key, Shield, Database } from 'lucide-react'
+import { Eye, EyeOff, Trash2, Save, AlertTriangle, Settings2, Key, Shield, Database, ArrowLeft } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
@@ -179,7 +179,7 @@ export default function ManageIntegrationClient({
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-        <div className="container max-w-4xl py-8">
+        <div className="container mx-auto max-w-3xl px-4 py-16">
           <Card className="border-red-800 bg-red-900/20 backdrop-blur">
             <CardHeader>
               <CardTitle className="text-red-300 flex items-center gap-2">
@@ -198,6 +198,7 @@ export default function ManageIntegrationClient({
                 onClick={() => router.push(`/dashboard/${provider}`)}
                 className="bg-slate-800 hover:bg-slate-700 text-white"
               >
+                <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to {providerName} Dashboard
               </Button>
             </CardContent>
@@ -209,33 +210,40 @@ export default function ManageIntegrationClient({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-      <div className="container max-w-4xl py-8 px-4">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`p-2 rounded-lg ${provider === 'digitalocean' ? 'bg-blue-600/20' : 'bg-purple-600/20'}`}>
-              <Settings2 className={`h-6 w-6 ${provider === 'digitalocean' ? 'text-blue-400' : 'text-purple-400'}`} />
+      <div className="container mx-auto max-w-4xl px-4 py-12">
+        <div className="mb-10 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className={`p-3 rounded-xl shadow-lg ${provider === 'digitalocean' ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 'bg-gradient-to-br from-purple-600 to-purple-700'}`}>
+              <Settings2 className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-white">{providerName} Integration Settings</h1>
-            <Badge className={`${provider === 'digitalocean' ? 'bg-blue-600/20 text-blue-300 border-blue-600' : 'bg-purple-600/20 text-purple-300 border-purple-600'}`}>
+            <h1 className="text-4xl font-bold text-white">{providerName} Settings</h1>
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <Badge className={`${provider === 'digitalocean' ? 'bg-blue-600/20 text-blue-300 border-blue-600/50' : 'bg-purple-600/20 text-purple-300 border-purple-600/50'}`}>
               Connected
             </Badge>
+            <span className="text-slate-400">•</span>
+            <p className="text-slate-400">
+              Manage your {providerName} API credentials and integration settings
+            </p>
           </div>
-          <p className="text-slate-400 ml-14">
-            Manage your {providerName} API credentials and integration settings
-          </p>
         </div>
 
-        <Card className="mb-6 border-slate-800 bg-slate-900/50 backdrop-blur">
-          <CardHeader>
-            <div className="flex items-center gap-2 mb-2">
-              <Key className="h-5 w-5 text-indigo-400" />
-              <CardTitle className="text-white">Update API Credentials</CardTitle>
+        <Card className="mb-8 border-slate-800 bg-slate-900/50 backdrop-blur shadow-xl">
+          <CardHeader className="border-b border-slate-800 pb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-indigo-600/20">
+                <Key className="h-5 w-5 text-indigo-400" />
+              </div>
+              <div>
+                <CardTitle className="text-white text-xl">API Credentials</CardTitle>
+                <CardDescription className="text-slate-400 mt-1">
+                  Update your {providerName} API credentials. Leave fields empty to keep existing values.
+                </CardDescription>
+              </div>
             </div>
-            <CardDescription className="text-slate-400">
-              Update your {providerName} API credentials. Leave fields empty to keep existing values.
-            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="pt-6 space-y-6">
             {isDatadog ? (
               <>
                 <div className="space-y-2">
@@ -327,36 +335,43 @@ export default function ManageIntegrationClient({
             <Button
               onClick={handleUpdateKeys}
               disabled={isLoading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/50 transition-all hover:shadow-xl"
+              className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white shadow-lg shadow-indigo-900/50 transition-all hover:shadow-xl hover:shadow-indigo-900/70 h-12 text-base font-medium"
             >
-              <Save className="mr-2 h-4 w-4" />
+              <Save className="mr-2 h-5 w-5" />
               {isLoading ? "Updating..." : "Update Credentials"}
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="border-red-900/50 bg-slate-900/50 backdrop-blur">
-          <CardHeader>
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-5 w-5 text-red-400" />
-              <CardTitle className="text-red-400">Danger Zone</CardTitle>
+        <Card className="border-red-900/50 bg-slate-900/50 backdrop-blur shadow-xl">
+          <CardHeader className="border-b border-red-900/30 pb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-600/20">
+                <AlertTriangle className="h-5 w-5 text-red-400" />
+              </div>
+              <div>
+                <CardTitle className="text-red-400 text-xl">Danger Zone</CardTitle>
+                <CardDescription className="text-slate-400 mt-1">
+                  Irreversible actions that will permanently delete your integration
+                </CardDescription>
+              </div>
             </div>
-            <CardDescription className="text-slate-400">
-              Irreversible actions that will permanently delete your integration
-            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="p-4 rounded-lg border border-red-900/50 bg-red-950/20">
-              <Alert variant="destructive" className="mb-4 border-red-800 bg-red-900/30">
+          <CardContent className="pt-6">
+            <div className="p-6 rounded-xl border border-red-900/50 bg-gradient-to-br from-red-950/30 to-red-950/10">
+              <Alert variant="destructive" className="mb-6 border-red-800 bg-red-900/30">
                 <Database className="h-4 w-4" />
                 <AlertDescription className="text-red-200">
                   This action cannot be undone. All billing history, resource costs, sync logs, and AI recommendations will be permanently deleted.
                 </AlertDescription>
               </Alert>
               
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                 <div className="flex-1">
-                  <h3 className="text-white font-semibold mb-1">Delete Integration</h3>
+                  <h3 className="text-white font-semibold text-lg mb-2 flex items-center gap-2">
+                    <Trash2 className="h-5 w-5 text-red-400" />
+                    Delete Integration
+                  </h3>
                   <p className="text-sm text-slate-400">
                     Permanently remove this {providerName} integration and all associated data from your account.
                   </p>
@@ -365,7 +380,7 @@ export default function ManageIntegrationClient({
                   variant="destructive"
                   onClick={() => setShowDeleteDialog(true)}
                   disabled={isLoading}
-                  className="bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-lg shadow-red-900/50 transition-all hover:shadow-xl hover:shadow-red-900/70 flex-shrink-0"
+                  className="bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-lg shadow-red-900/50 transition-all hover:shadow-xl hover:shadow-red-900/70 h-11 px-6 flex-shrink-0 w-full sm:w-auto"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete Integration
@@ -375,12 +390,13 @@ export default function ManageIntegrationClient({
           </CardContent>
         </Card>
 
-        <div className="mt-6">
+        <div className="mt-8 flex justify-center">
           <Button 
             variant="outline" 
             onClick={() => router.push(`/dashboard/${provider}`)}
-            className="bg-slate-800/50 hover:bg-slate-700 text-slate-300 border-slate-700"
+            className="bg-slate-800/50 hover:bg-slate-700 text-slate-300 border-slate-700 px-6"
           >
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to {providerName} Dashboard
           </Button>
         </div>
