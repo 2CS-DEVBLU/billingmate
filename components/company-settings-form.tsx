@@ -490,84 +490,133 @@ export function CompanySettingsForm({ company, subscription, isAdmin }: CompanyS
 
       <div className="flex justify-between gap-3 pt-4 border-t border-slate-700">
         {isAdmin && (
-          company.is_active ? (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  disabled={deactivating}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  {deactivating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Deactivating...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Deactivate Company
-                    </>
-                  )}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-slate-900 border-slate-700">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-white">Deactivate Company Account</AlertDialogTitle>
-                  <AlertDialogDescription className="text-slate-400">
-                    This will deactivate your company account and all associated users. Your subscription will be canceled.
-                    You can reactivate within 30 days, or contact support after that period.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeactivate}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    Deactivate
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ) : (
-            <Button
-              type="button"
-              onClick={handleReactivate}
-              disabled={deactivating}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              {deactivating ? (
+          <div className="w-full space-y-4">
+            <div className="p-6 rounded-lg border border-red-900/50 bg-gradient-to-br from-red-950/30 to-red-900/10 shadow-lg">
+              {company.is_active ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Reactivating...
+                  <div className="flex items-start gap-2 mb-3">
+                    <AlertCircle className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold mb-1">Deactivate Company Account</h3>
+                      <p className="text-sm text-slate-400 mb-2">
+                        This will deactivate your company account and all associated users. Your subscription will be canceled.
+                      </p>
+                      <p className="text-xs text-red-400">
+                        Warning: You can reactivate within 30 days, or contact support after that period.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        disabled={deactivating}
+                        className="bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-lg shadow-red-900/50 transition-all hover:shadow-xl hover:shadow-red-900/70 w-full sm:w-auto"
+                      >
+                        {deactivating ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Deactivating...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Deactivate Company
+                          </>
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-slate-900 border-slate-700">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-white">Deactivate Company Account</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                          This will deactivate your company account and all associated users. Your subscription will be canceled.
+                          You can reactivate within 30 days, or contact support after that period.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeactivate}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          Deactivate
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </>
               ) : (
                 <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Reactivate Company
+                  <div className="flex items-start gap-2 mb-3">
+                    <RefreshCw className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold mb-1">Reactivate Company Account</h3>
+                      <p className="text-sm text-slate-400">
+                        Restore access to your company account and all features.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    type="button"
+                    onClick={handleReactivate}
+                    disabled={deactivating}
+                    className="bg-green-600 hover:bg-green-700 text-white border-green-500 shadow-lg shadow-green-900/50 transition-all hover:shadow-xl hover:shadow-green-900/70 w-full sm:w-auto"
+                  >
+                    {deactivating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Reactivating...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Reactivate Company
+                      </>
+                    )}
+                  </Button>
                 </>
               )}
-            </Button>
-          )
+            </div>
+            
+            <div className="flex justify-end">
+              <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl transition-all">
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         )}
         
-        <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white ml-auto">
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Save Changes
-            </>
-          )}
-        </Button>
+        {!isAdmin && (
+          <Button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-700 text-white ml-auto shadow-lg hover:shadow-xl transition-all">
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        )}
       </div>
     </form>
   )
