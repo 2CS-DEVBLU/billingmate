@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { sendInvitationEmail } from "@/lib/email/send-invitation"
 
 export async function POST(
   request: Request,
@@ -21,13 +22,30 @@ export async function POST(
     // Get current user's profile
     const { data: profile } = await supabase
       .from("profiles")
-      .select("company_id, is_admin")
+      .select("company_id, is_admin, full_name, email")
       .eq("id", user.id)
       .single()
 
     if (!profile?.is_admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
+
+    const { data: invitation } = await supabase
+      .from("user_invitations")
+      .select("email, company_id")
+      .eq("id", invitationId)
+      .eq("company_id", profile.company_id)
+      .single()
+
+    if (!invitation) {
+      return NextResponse.json({ error: "Invitation not found" }, { status: 404 })
+    }
+
+    const { data: company } = await supabase
+      .from("companies")
+      .select("name")
+      .eq("id", invitation.company_id)
+      .single()
 
     // Generate new token and expiry
     const tokenBytes = new Uint8Array(32)
@@ -51,7 +69,22 @@ export async function POST(
       throw updateError
     }
 
-    return NextResponse.json({ success: true })
+    const invitationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/auth/accept-invite?token=${token}`
+    
+    const emailResult = await sendInvitationEmail(
+      invitation.email,
+      invitationUrl,
+      company?.name || "your company",
+      profile.full_name || profile.email || "A team member"
+    )
+
+    console.log("[v0] Invitation resent, email result:", emailResult)
+
+    return NextResponse.json({ 
+      success: true,
+      emailSent: emailResult.success,
+      invitationUrl // For development/testing
+    })
   } catch (error) {
     console.error("[v0] Error resending invitation:", error)
     return NextResponse.json(

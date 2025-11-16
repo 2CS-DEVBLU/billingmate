@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { sendInvitationEmail } from "@/lib/email/send-invitation"
 
 export async function POST(request: Request) {
   console.log("[v0] Invite API - Request received")
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     console.log("[v0] Getting user profile...")
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("id, company_id, company_account_role, is_admin")
+      .select("id, company_id, company_account_role, is_admin, full_name")
       .eq("id", user.id)
       .maybeSingle()
 
@@ -208,16 +209,27 @@ export async function POST(request: Request) {
 
     console.log("[v0] Invitation created:", invitation)
 
-    // TODO: Send invitation email with token
-    // For now, we'll just return the invitation URL
+    // Send email notification
     const invitationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/auth/accept-invite?token=${token}`
     
     console.log("[v0] Invitation URL:", invitationUrl)
 
+    const emailResult = await sendInvitationEmail(
+      email,
+      invitationUrl,
+      company.name,
+      profile.full_name || user.email || "A team member"
+    )
+
+    if (!emailResult.success) {
+      console.warn("[v0] Email failed to send, but invitation was created")
+    }
+
     return NextResponse.json({
       success: true,
       invitation,
-      invitationUrl, // In production, this would be sent via email
+      invitationUrl, // Still return URL for development/testing
+      emailSent: emailResult.success,
     })
   } catch (error) {
     console.error("[v0] Critical error in invite route:", error)
