@@ -76,12 +76,42 @@ export function InviteUserDialog({ open, onOpenChange }: InviteUserDialogProps) 
         throw new Error(data.error || "Failed to send invitation")
       }
 
-      toast({
-        title: data.resent ? "Invitation resent" : "Invitation sent",
-        description: data.resent 
-          ? `A new invitation has been sent to ${email}`
-          : `An invitation has been sent to ${email}`,
-      })
+      if (data.emailSent) {
+        toast({
+          title: data.resent ? "Invitation resent" : "Invitation sent",
+          description: data.resent 
+            ? `A new invitation email has been sent to ${email}`
+            : `An invitation email has been sent to ${email}`,
+        })
+      } else {
+        // Email couldn't be sent, show the invitation URL
+        toast({
+          title: "Invitation created",
+          description: (
+            <div className="space-y-2">
+              <p>Email delivery is not available. Please share this link with the user:</p>
+              <div className="mt-2 p-2 bg-slate-800 rounded text-xs break-all">
+                {data.invitationUrl}
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 w-full"
+                onClick={() => {
+                  navigator.clipboard.writeText(data.invitationUrl)
+                  toast({
+                    title: "Copied!",
+                    description: "Invitation link copied to clipboard",
+                  })
+                }}
+              >
+                Copy Link
+              </Button>
+            </div>
+          ),
+          duration: 10000,
+        })
+      }
 
       setEmail("")
       setRole("viewer")
