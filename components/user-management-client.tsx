@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { UserPlus, MoreVertical, Mail, Trash2, Shield, Eye, Clock, CheckCircle2 } from 'lucide-react'
+import { UserPlus, MoreVertical, Mail, Trash2, Shield, Eye, Clock, Users, UserCheck, UserX } from 'lucide-react'
 import { InviteUserDialog } from "@/components/invite-user-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from 'next/navigation'
@@ -55,6 +55,10 @@ export function UserManagementClient({ users, invitations, currentUserId }: User
   const { toast } = useToast()
   const router = useRouter()
 
+  const activeUsers = users.filter(u => u.is_active).length
+  const admins = users.filter(u => u.is_admin).length
+  const expiredInvitations = invitations.filter(inv => new Date(inv.expires_at) < new Date()).length
+
   const handleResendInvitation = async (invitationId: string, email: string) => {
     setLoading(invitationId)
     try {
@@ -67,7 +71,6 @@ export function UserManagementClient({ users, invitations, currentUserId }: User
       const data = await response.json()
 
       if (data.method === 'manual' && data.url) {
-        // Email service not configured, show URL to admin
         toast({
           title: "Invitation Updated",
           description: (
@@ -192,186 +195,163 @@ export function UserManagementClient({ users, invitations, currentUserId }: User
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">User Management</h1>
-          <p className="text-slate-400">Manage team members and invitations for your company</p>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-white mb-3">Team Management</h1>
+          <p className="text-slate-400 text-lg">Manage your team members, roles, and invitations</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-gradient-to-br from-indigo-900/40 to-indigo-900/20 border-indigo-800/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm font-medium mb-1">Total Users</p>
+                  <p className="text-3xl font-bold text-white">{users.length}</p>
+                  <p className="text-indigo-400 text-xs mt-1">of 3 available</p>
+                </div>
+                <div className="h-12 w-12 bg-indigo-600/20 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6 text-indigo-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-900/40 to-green-900/20 border-green-800/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm font-medium mb-1">Active Users</p>
+                  <p className="text-3xl font-bold text-white">{activeUsers}</p>
+                  <p className="text-green-400 text-xs mt-1">currently active</p>
+                </div>
+                <div className="h-12 w-12 bg-green-600/20 rounded-full flex items-center justify-center">
+                  <UserCheck className="h-6 w-6 text-green-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-900/40 to-purple-900/20 border-purple-800/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm font-medium mb-1">Administrators</p>
+                  <p className="text-3xl font-bold text-white">{admins}</p>
+                  <p className="text-purple-400 text-xs mt-1">admin users</p>
+                </div>
+                <div className="h-12 w-12 bg-purple-600/20 rounded-full flex items-center justify-center">
+                  <Shield className="h-6 w-6 text-purple-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-amber-900/40 to-amber-900/20 border-amber-800/50">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm font-medium mb-1">Pending Invites</p>
+                  <p className="text-3xl font-bold text-white">{invitations.length}</p>
+                  {expiredInvitations > 0 && (
+                    <p className="text-red-400 text-xs mt-1">{expiredInvitations} expired</p>
+                  )}
+                  {expiredInvitations === 0 && invitations.length > 0 && (
+                    <p className="text-amber-400 text-xs mt-1">awaiting response</p>
+                  )}
+                </div>
+                <div className="h-12 w-12 bg-amber-600/20 rounded-full flex items-center justify-center">
+                  <Clock className="h-6 w-6 text-amber-400" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid gap-6">
-          {/* Active Users */}
-          <Card className="bg-slate-900/50 border-slate-800">
-            <CardHeader className="flex flex-row items-center justify-between">
+          <Card className="bg-slate-900/50 border-slate-800 backdrop-blur">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
-                <CardTitle className="text-white">Active Users</CardTitle>
-                <CardDescription className="text-slate-400">
-                  {users.length} of 3 users in your company
+                <CardTitle className="text-2xl text-white">Team Members</CardTitle>
+                <CardDescription className="text-slate-400 mt-1">
+                  All active users in your organization
                 </CardDescription>
               </div>
-              <Button onClick={() => setInviteDialogOpen(true)} className="bg-indigo-600 hover:bg-indigo-700">
+              <Button 
+                onClick={() => setInviteDialogOpen(true)} 
+                className="bg-indigo-600 hover:bg-indigo-700 shadow-lg"
+                disabled={users.length >= 3}
+              >
                 <UserPlus className="h-4 w-4 mr-2" />
                 Invite User
               </Button>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-slate-800 hover:bg-slate-800/50">
-                    <TableHead className="text-slate-300">User</TableHead>
-                    <TableHead className="text-slate-300">Email</TableHead>
-                    <TableHead className="text-slate-300">Role</TableHead>
-                    <TableHead className="text-slate-300">Status</TableHead>
-                    <TableHead className="text-slate-300">Joined</TableHead>
-                    <TableHead className="text-slate-300 text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id} className="border-slate-800 hover:bg-slate-800/50">
-                      <TableCell className="text-white font-medium">
-                        {user.full_name || "—"}
-                      </TableCell>
-                      <TableCell className="text-slate-300">{user.email}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={user.is_admin ? "default" : "secondary"}
-                          className={
-                            user.is_admin
-                              ? "bg-indigo-600 text-white"
-                              : "bg-slate-700 text-slate-300"
-                          }
-                        >
-                          {user.is_admin ? (
-                            <>
-                              <Shield className="h-3 w-3 mr-1" />
-                              Administrator
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-3 w-3 mr-1" />
-                              Viewer
-                            </>
-                          )}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={user.is_active ? "default" : "secondary"}
-                          className={
-                            user.is_active
-                              ? "bg-green-600 text-white"
-                              : "bg-slate-700 text-slate-300"
-                          }
-                        >
-                          {user.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-slate-400">
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {user.id !== currentUserId && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-slate-400 hover:text-white"
-                                disabled={loading === user.id}
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
-                              <DropdownMenuLabel className="text-slate-300">Actions</DropdownMenuLabel>
-                              <DropdownMenuSeparator className="bg-slate-800" />
-                              <DropdownMenuItem
-                                onClick={() => handleChangeRole(user.id, !user.is_admin)}
-                                className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer"
-                              >
-                                <Shield className="h-4 w-4 mr-2" />
-                                Change to {user.is_admin ? "Viewer" : "Admin"}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteUser(user.id, user.email)}
-                                className="text-red-400 focus:bg-slate-800 focus:text-red-300 cursor-pointer"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Remove User
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-
-          {/* Pending Invitations */}
-          {invitations.length > 0 && (
-            <Card className="bg-slate-900/50 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-white">Pending Invitations</CardTitle>
-                <CardDescription className="text-slate-400">
-                  {invitations.length} invitation(s) waiting to be accepted
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+              <div className="rounded-lg border border-slate-800 overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-slate-800 hover:bg-slate-800/50">
-                      <TableHead className="text-slate-300">Email</TableHead>
-                      <TableHead className="text-slate-300">Role</TableHead>
-                      <TableHead className="text-slate-300">Status</TableHead>
-                      <TableHead className="text-slate-300">Sent</TableHead>
-                      <TableHead className="text-slate-300">Expires</TableHead>
-                      <TableHead className="text-slate-300 text-right">Actions</TableHead>
+                    <TableRow className="border-slate-800 bg-slate-800/50 hover:bg-slate-800/50">
+                      <TableHead className="text-slate-300 font-semibold">User</TableHead>
+                      <TableHead className="text-slate-300 font-semibold">Email</TableHead>
+                      <TableHead className="text-slate-300 font-semibold">Role</TableHead>
+                      <TableHead className="text-slate-300 font-semibold">Status</TableHead>
+                      <TableHead className="text-slate-300 font-semibold">Joined</TableHead>
+                      <TableHead className="text-slate-300 font-semibold text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {invitations.map((invitation) => {
-                      const isExpired = new Date(invitation.expires_at) < new Date()
-                      return (
-                        <TableRow key={invitation.id} className="border-slate-800 hover:bg-slate-800/50">
-                          <TableCell className="text-white">{invitation.email}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="secondary"
-                              className="bg-slate-700 text-slate-300"
-                            >
-                              {invitation.role === "admin" ? "Administrator" : "Viewer"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={isExpired ? "destructive" : "secondary"}
-                              className={
-                                isExpired
-                                  ? "bg-red-600 text-white"
-                                  : "bg-amber-600 text-white"
-                              }
-                            >
-                              <Clock className="h-3 w-3 mr-1" />
-                              {isExpired ? "Expired" : "Pending"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-slate-400">
-                            {new Date(invitation.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell className="text-slate-400">
-                            {new Date(invitation.expires_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell className="text-right">
+                    {users.map((user) => (
+                      <TableRow key={user.id} className="border-slate-800 hover:bg-slate-800/30">
+                        <TableCell className="text-white font-medium">
+                          {user.full_name || "—"}
+                        </TableCell>
+                        <TableCell className="text-slate-300">{user.email}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={user.is_admin ? "default" : "secondary"}
+                            className={
+                              user.is_admin
+                                ? "bg-indigo-600 text-white border-indigo-500"
+                                : "bg-slate-700 text-slate-300 border-slate-600"
+                            }
+                          >
+                            {user.is_admin ? (
+                              <>
+                                <Shield className="h-3 w-3 mr-1" />
+                                Administrator
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-3 w-3 mr-1" />
+                                Viewer
+                              </>
+                            )}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={user.is_active ? "default" : "secondary"}
+                            className={
+                              user.is_active
+                                ? "bg-green-600 text-white border-green-500"
+                                : "bg-slate-700 text-slate-300 border-slate-600"
+                            }
+                          >
+                            {user.is_active ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-slate-400">
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {user.id !== currentUserId && (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="text-slate-400 hover:text-white"
-                                  disabled={loading === invitation.id}
+                                  className="text-slate-400 hover:text-white hover:bg-slate-800"
+                                  disabled={loading === user.id}
                                 >
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
@@ -380,27 +360,128 @@ export function UserManagementClient({ users, invitations, currentUserId }: User
                                 <DropdownMenuLabel className="text-slate-300">Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-slate-800" />
                                 <DropdownMenuItem
-                                  onClick={() => handleResendInvitation(invitation.id, invitation.email)}
+                                  onClick={() => handleChangeRole(user.id, !user.is_admin)}
                                   className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer"
                                 >
-                                  <Mail className="h-4 w-4 mr-2" />
-                                  Resend Invitation
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Change to {user.is_admin ? "Viewer" : "Admin"}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => handleDeleteInvitation(invitation.id, invitation.email)}
+                                  onClick={() => handleDeleteUser(user.id, user.email)}
                                   className="text-red-400 focus:bg-slate-800 focus:text-red-300 cursor-pointer"
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />
-                                  Cancel Invitation
+                                  Remove User
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
+                          )}
+                          {user.id === currentUserId && (
+                            <Badge variant="secondary" className="bg-slate-700 text-slate-400 border-slate-600">
+                              You
+                            </Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {invitations.length > 0 && (
+            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="text-2xl text-white">Pending Invitations</CardTitle>
+                <CardDescription className="text-slate-400 mt-1">
+                  {invitations.length} invitation(s) waiting to be accepted
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-lg border border-slate-800 overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-slate-800 bg-slate-800/50 hover:bg-slate-800/50">
+                        <TableHead className="text-slate-300 font-semibold">Email</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Role</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Status</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Sent</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Expires</TableHead>
+                        <TableHead className="text-slate-300 font-semibold text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {invitations.map((invitation) => {
+                        const isExpired = new Date(invitation.expires_at) < new Date()
+                        return (
+                          <TableRow key={invitation.id} className="border-slate-800 hover:bg-slate-800/30">
+                            <TableCell className="text-white font-medium">{invitation.email}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="secondary"
+                                className="bg-slate-700 text-slate-300 border-slate-600"
+                              >
+                                {invitation.role === "admin" ? "Administrator" : "Viewer"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={isExpired ? "destructive" : "secondary"}
+                                className={
+                                  isExpired
+                                    ? "bg-red-600 text-white border-red-500"
+                                    : "bg-amber-600 text-white border-amber-500"
+                                }
+                              >
+                                <Clock className="h-3 w-3 mr-1" />
+                                {isExpired ? "Expired" : "Pending"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-slate-400">
+                              {new Date(invitation.created_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell className="text-slate-400">
+                              {new Date(invitation.expires_at).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-slate-400 hover:text-white hover:bg-slate-800"
+                                    disabled={loading === invitation.id}
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
+                                  <DropdownMenuLabel className="text-slate-300">Actions</DropdownMenuLabel>
+                                  <DropdownMenuSeparator className="bg-slate-800" />
+                                  <DropdownMenuItem
+                                    onClick={() => handleResendInvitation(invitation.id, invitation.email)}
+                                    className="text-slate-300 focus:bg-slate-800 focus:text-white cursor-pointer"
+                                  >
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Resend Invitation
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeleteInvitation(invitation.id, invitation.email)}
+                                    className="text-red-400 focus:bg-slate-800 focus:text-red-300 cursor-pointer"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Cancel Invitation
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           )}
