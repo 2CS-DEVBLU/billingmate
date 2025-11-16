@@ -7,28 +7,27 @@ export async function sendInvitationEmail({
   companyName: string
   invitationUrl: string
 }) {
-  console.log("[v0] Sending invitation email to:", email)
-  console.log("[v0] Invitation URL:", invitationUrl)
-  console.log("[v0] Company:", companyName)
-
-  // Check if Resend API key is configured
   const apiKey = process.env.RESEND_API_KEY
 
+  console.log('[v0] Sending invitation email to:', email)
+  console.log('[v0] Invitation URL:', invitationUrl)
+  console.log('[v0] Company:', companyName)
+
   if (!apiKey) {
-    console.log("[v0] RESEND_API_KEY not configured. Invitation URL logged above.")
-    console.log("[v0] To enable email sending, add RESEND_API_KEY to environment variables")
-    return { success: true, method: "manual" }
+    console.log('[v0] Email service not configured. Invitation URL:', invitationUrl)
+    console.log('[v0] In production, configure RESEND_API_KEY environment variable')
+    return { success: true, method: 'manual' }
   }
 
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        from: "BillingMate <noreply@billingmate.com>",
+        from: 'onboarding@resend.dev', // Use Resend's test email instead of custom domain
         to: email,
         subject: `You've been invited to join ${companyName} on BillingMate`,
         html: `
@@ -43,15 +42,14 @@ export async function sendInvitationEmail({
                 <h1 style="color: white; margin: 0; font-size: 28px;">BillingMate</h1>
               </div>
               
-              <div style="background: #ffffff; padding: 40px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
-                <h2 style="color: #333; margin-top: 0;">You've Been Invited!</h2>
+              <div style="background: white; padding: 40px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+                <h2 style="color: #1f2937; margin-top: 0;">You're Invited!</h2>
                 
-                <p style="font-size: 16px; color: #555;">
-                  You've been invited to join <strong>${companyName}</strong> on BillingMate, 
-                  a cloud cost management platform.
+                <p style="font-size: 16px; color: #4b5563;">
+                  You've been invited to join <strong>${companyName}</strong> on BillingMate - a comprehensive cloud billing management platform.
                 </p>
                 
-                <p style="font-size: 16px; color: #555;">
+                <p style="font-size: 16px; color: #4b5563;">
                   Click the button below to accept your invitation and create your account:
                 </p>
                 
@@ -69,15 +67,17 @@ export async function sendInvitationEmail({
                   </a>
                 </div>
                 
-                <p style="font-size: 14px; color: #777; margin-top: 30px;">
-                  This invitation will expire in 7 days. If you didn't expect this invitation, 
-                  you can safely ignore this email.
+                <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
+                  Or copy and paste this link into your browser:
+                </p>
+                <p style="font-size: 14px; color: #667eea; word-break: break-all;">
+                  ${invitationUrl}
                 </p>
                 
-                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
+                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
                 
-                <p style="font-size: 12px; color: #999; text-align: center;">
-                  BillingMate - Cloud Cost Management Platform
+                <p style="font-size: 12px; color: #9ca3af; margin: 0;">
+                  If you didn't expect this invitation, you can safely ignore this email.
                 </p>
               </div>
             </body>
@@ -87,19 +87,21 @@ export async function sendInvitationEmail({
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      console.log("[v0] Email API error:", error.message || error.statusCode)
-      console.log("[v0] Email service not configured. Invitation URL:", invitationUrl)
-      console.log("[v0] In production, configure RESEND_API_KEY environment variable")
-      return { success: true, method: "manual" }
+      const errorData = await response.json()
+      console.error('[v0] Email API error:', errorData.message || 'Unknown error')
+      
+      console.log('[v0] Email service not configured. Invitation URL:', invitationUrl)
+      console.log('[v0] In production, configure RESEND_API_KEY and verify domain at https://resend.com/domains')
+      return { success: true, method: 'manual' }
     }
 
     const data = await response.json()
-    console.log("[v0] Email sent successfully:", data.id)
-    return { success: true, method: "email", emailId: data.id }
+    console.log('[v0] Email sent successfully:', data.id)
+    return { success: true, method: 'email', emailId: data.id }
   } catch (error) {
-    console.error("[v0] Failed to send invitation email:", error)
-    console.log("[v0] Falling back to manual invitation. URL:", invitationUrl)
-    return { success: true, method: "manual" }
+    console.error('[v0] Error sending email:', error)
+    console.log('[v0] Falling back to manual invitation URL sharing')
+    console.log('[v0] Invitation URL:', invitationUrl)
+    return { success: true, method: 'manual' }
   }
 }
