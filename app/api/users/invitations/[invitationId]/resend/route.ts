@@ -69,7 +69,11 @@ export async function POST(
       throw updateError
     }
 
-    const invitationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/auth/accept-invite?token=${token}`
+    const host = request.headers.get('host')
+    const protocol = request.headers.get('x-forwarded-proto') || 'https'
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`
+    
+    const invitationUrl = `${baseUrl}/auth/accept-invite?token=${token}`
     
     const emailResult = await sendInvitationEmail({
       email: invitation.email,

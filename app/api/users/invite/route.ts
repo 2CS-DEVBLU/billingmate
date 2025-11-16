@@ -209,11 +209,15 @@ export async function POST(request: Request) {
 
     console.log("[v0] Invitation created:", invitation)
 
-    // Send email notification
-    const invitationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/auth/accept-invite?token=${token}`
+    const host = request.headers.get('host')
+    const protocol = request.headers.get('x-forwarded-proto') || 'https'
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`
+    
+    const invitationUrl = `${baseUrl}/auth/accept-invite?token=${token}`
     
     console.log("[v0] Invitation URL:", invitationUrl)
 
+    // Send email notification
     const emailResult = await sendInvitationEmail({
       email,
       companyName: company.name,

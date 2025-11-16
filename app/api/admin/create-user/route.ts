@@ -35,6 +35,10 @@ export async function POST(request: Request) {
 
     const generatedPassword = password || Math.random().toString(36).slice(-10) + "A1!"
 
+    const host = request.headers.get('host')
+    const protocol = request.headers.get('x-forwarded-proto') || 'https'
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password: generatedPassword,
@@ -42,7 +46,7 @@ export async function POST(request: Request) {
         data: {
           full_name: fullName,
         },
-        emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || undefined,
+        emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${baseUrl}/dashboard`,
       },
     })
 
