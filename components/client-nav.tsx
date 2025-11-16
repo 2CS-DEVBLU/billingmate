@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { TrendingDown, LayoutDashboard, Settings, LogOut, CreditCard, User, Building } from 'lucide-react'
+import { TrendingDown, LayoutDashboard, Settings, LogOut, CreditCard, User, Building, Home } from 'lucide-react'
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from 'next/navigation'
 import { InviteUserDialog } from '@/components/invite-user-dialog'
@@ -48,6 +48,18 @@ export function ClientNav({ companyName, isAdmin = false }: ClientNavProps) {
           </Link>
 
           <nav className="hidden md:flex gap-1">
+            {pathname !== "/dashboard" && (
+              <Button
+                variant="ghost"
+                asChild
+                className="text-slate-400 hover:text-white hover:bg-slate-800/50 border border-slate-700/50"
+              >
+                <Link href="/dashboard">
+                  <Home className="h-4 w-4 mr-2" />
+                  Back to Dashboard
+                </Link>
+              </Button>
+            )}
             <Button
               variant={pathname === "/dashboard" ? "secondary" : "ghost"}
               asChild
