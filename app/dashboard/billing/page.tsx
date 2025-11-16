@@ -104,7 +104,6 @@ export default async function BillingPage() {
       name: "Trial",
       description: "Perfect for getting started",
       price: "Free",
-      priceSubtext: "for 3 days",
       features: [
         "Up to $5K monthly cloud spend",
         "1 cloud account",
@@ -215,7 +214,7 @@ export default async function BillingPage() {
                   </CardDescription>
                   <div className="mt-4">
                     <span className="text-4xl font-bold text-white">{plan.price}</span>
-                    <span className="text-slate-400">{plan.priceSubtext}</span>
+                    {plan.priceSubtext && <span className="text-slate-400">{plan.priceSubtext}</span>}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">

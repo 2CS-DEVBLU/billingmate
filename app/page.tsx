@@ -63,7 +63,7 @@ export default function HomePage() {
             View Demo
           </Button>
         </div>
-        <p className="mt-6 text-sm text-slate-500">14-day free trial • No credit card required • Cancel anytime</p>
+        <p className="mt-6 text-sm text-slate-500">Free trial • No credit card required • Cancel anytime • Upgrade to a paid plan anytime</p>
       </section>
 
       {/* Features Section */}
@@ -156,7 +156,7 @@ export default function HomePage() {
         <div className="mb-16 text-center">
           <h2 className="mb-4 text-4xl font-bold text-white">Simple, Transparent Pricing</h2>
           <p className="mx-auto max-w-2xl text-slate-400">
-            Choose the plan that fits your organization. Start with a 3-day free trial.
+            Choose the plan that fits your organization. Start with a free trial.
           </p>
         </div>
         <div className="grid gap-8 lg:grid-cols-3">
@@ -167,7 +167,6 @@ export default function HomePage() {
               <CardDescription className="text-slate-400">Perfect for getting started</CardDescription>
               <div className="mt-4">
                 <span className="text-4xl font-bold text-white">Free</span>
-                <span className="text-slate-400"> for 3 days</span>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">

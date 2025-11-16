@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { useState } from "react"
 
 export default function SignUpPage() {
@@ -73,7 +73,7 @@ export default function SignUpPage() {
           <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
             <CardHeader>
               <CardTitle className="text-2xl text-white">Create Account</CardTitle>
-              <CardDescription className="text-slate-400">Get started with your 3-day free trial</CardDescription>
+              <CardDescription className="text-slate-400">Get started with your free trial</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSignUp}>

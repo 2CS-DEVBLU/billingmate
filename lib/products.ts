@@ -15,7 +15,7 @@ export const PRODUCTS: Product[] = [
     id: "trial",
     name: "Trial",
     description: "Perfect for getting started",
-    priceInCents: 0, // Free for 3 days
+    priceInCents: 0, // Free trial
     features: [
       "Up to $5K monthly cloud spend",
       "1 cloud account",
