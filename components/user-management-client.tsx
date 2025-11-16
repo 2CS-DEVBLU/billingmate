@@ -64,10 +64,35 @@ export function UserManagementClient({ users, invitations, currentUserId }: User
 
       if (!response.ok) throw new Error("Failed to resend invitation")
 
-      toast({
-        title: "Invitation resent",
-        description: `A new invitation has been sent to ${email}`,
-      })
+      const data = await response.json()
+
+      if (data.method === 'manual' && data.url) {
+        // Email service not configured, show URL to admin
+        toast({
+          title: "Invitation Updated",
+          description: (
+            <div className="space-y-2">
+              <p className="text-sm">Copy this invitation link and share it manually with {email}:</p>
+              <div className="bg-slate-800 p-2 rounded text-xs break-all font-mono">{data.url}</div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(data.url)
+                  toast({ title: "Copied!", description: "Invitation URL copied to clipboard" })
+                }}
+                className="text-xs text-indigo-400 hover:underline"
+              >
+                Click to copy
+              </button>
+            </div>
+          ),
+          duration: 15000,
+        })
+      } else {
+        toast({
+          title: "Invitation resent",
+          description: `A new invitation has been sent to ${email}`,
+        })
+      }
       router.refresh()
     } catch (error) {
       toast({

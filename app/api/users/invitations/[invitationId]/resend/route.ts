@@ -81,8 +81,9 @@ export async function POST(
 
     return NextResponse.json({ 
       success: true,
-      emailSent: emailResult.success,
-      invitationUrl // For development/testing
+      method: emailResult.method,
+      url: emailResult.url,
+      emailSent: emailResult.method === 'email'
     })
   } catch (error) {
     console.error("[v0] Error resending invitation:", error)
