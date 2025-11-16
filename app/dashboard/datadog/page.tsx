@@ -191,10 +191,11 @@ export default async function DatadogDashboardPage({
               <Link href="/dashboard/integrations/datadog">
                 <Button 
                   variant="outline" 
-                  className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-500 transition-all"
+                  className="group relative overflow-hidden border-2 border-purple-500/50 bg-purple-950/50 text-purple-200 hover:text-white hover:border-purple-400 transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
                 >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Integration Settings
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Settings className="h-4 w-4 mr-2 relative z-10 group-hover:rotate-90 transition-transform duration-300" />
+                  <span className="relative z-10 font-medium">Integration Settings</span>
                 </Button>
               </Link>
             )}
