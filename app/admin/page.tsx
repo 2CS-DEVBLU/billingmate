@@ -1,9 +1,4 @@
 import { Badge } from "@/components/ui/badge"
-import { TableCell } from "@/components/ui/table"
-import { TableBody } from "@/components/ui/table"
-import { TableHead } from "@/components/ui/table"
-import { TableRow } from "@/components/ui/table"
-import { TableHeader } from "@/components/ui/table"
 import {
   Table,
   TableHeader,
