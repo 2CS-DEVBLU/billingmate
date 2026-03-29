@@ -323,7 +323,7 @@ jobs:
             services:
               # ---------- Supabase ----------
               db:
-                image: supabase/postgres:15.8.1.060
+                image: supabase/postgres:15.14.1.103
                 container_name: billingmate-db
                 restart: unless-stopped
                 ports:
@@ -342,7 +342,7 @@ jobs:
                   retries: 10
 
               kong:
-                image: kong:2.8.1
+                image: kong:2.8.5
                 container_name: billingmate-kong
                 restart: unless-stopped
                 environment:
@@ -360,7 +360,7 @@ jobs:
                 networks: [billingmate]
 
               auth:
-                image: supabase/gotrue:v2.170.0
+                image: supabase/gotrue:v2.188.1
                 container_name: billingmate-auth
                 restart: unless-stopped
                 depends_on:
@@ -390,7 +390,7 @@ jobs:
                 networks: [billingmate]
 
               rest:
-                image: postgrest/postgrest:v12.2.8
+                image: postgrest/postgrest:v14.7
                 container_name: billingmate-rest
                 restart: unless-stopped
                 depends_on:
@@ -407,7 +407,7 @@ jobs:
                 networks: [billingmate]
 
               realtime:
-                image: supabase/realtime:v2.34.47
+                image: supabase/realtime:v2.80.2
                 container_name: billingmate-realtime
                 restart: unless-stopped
                 depends_on:
@@ -430,7 +430,7 @@ jobs:
                 networks: [billingmate]
 
               storage:
-                image: supabase/storage-api:v1.14.7
+                image: supabase/storage-api:v1.47.2
                 container_name: billingmate-storage
                 restart: unless-stopped
                 depends_on:
@@ -456,7 +456,7 @@ jobs:
                 networks: [billingmate]
 
               meta:
-                image: supabase/postgres-meta:v0.84.2
+                image: supabase/postgres-meta:v0.96.1
                 container_name: billingmate-meta
                 restart: unless-stopped
                 depends_on:
