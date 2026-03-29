@@ -17,6 +17,8 @@ import {
   ChevronLeft,
   ChevronRight,
   BarChart3,
+  DollarSign,
+  AlertTriangle,
 } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
@@ -44,6 +46,8 @@ export function Sidebar({ companyName, isAdmin = false, userRole }: SidebarProps
   const mainLinks = [
     { href: "/dashboard", label: t.nav.overview, icon: LayoutDashboard },
     { href: "/dashboard/integrations", label: t.nav.integrations, icon: Cloud },
+    { href: "/dashboard/budgets", label: "Budgets", icon: DollarSign },
+    { href: "/dashboard/anomalies", label: "Anomalies", icon: AlertTriangle },
   ]
 
   const adminLinks = isAdmin
