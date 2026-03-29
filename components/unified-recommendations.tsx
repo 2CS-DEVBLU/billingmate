@@ -36,7 +36,7 @@ export function UnifiedRecommendations() {
   const [upgradeRequired, setUpgradeRequired] = useState(false)
   const { t } = useI18n()
 
-  const fetch​Recs = async () => {
+  const loadRecs = async () => {
     setLoading(true)
     setError(null)
     setUpgradeRequired(false)
@@ -62,7 +62,7 @@ export function UnifiedRecommendations() {
   }
 
   useEffect(() => {
-    fetch​Recs()
+    loadRecs()
   }, [])
 
   if (upgradeRequired) {
@@ -89,7 +89,7 @@ export function UnifiedRecommendations() {
             <CardTitle className="text-sm text-white">{t.recommendations.aiCostOptimization}</CardTitle>
           </div>
           <Button
-            onClick={fetch​Recs}
+            onClick={loadRecs}
             disabled={loading}
             size="sm"
             className="h-7 text-[10px] bg-white/5 hover:bg-white/10 text-slate-400 border border-white/10"
