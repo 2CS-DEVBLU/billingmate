@@ -548,6 +548,10 @@ jobs:
             # Restart services that depend on correct passwords
             docker compose restart auth rest storage realtime
 
+            # Restart nginx to pick up new container IPs
+            sleep 5
+            docker compose restart nginx
+
             docker image prune -f
 
             echo "=== Deploy complete at $(date) ==="
