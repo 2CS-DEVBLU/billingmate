@@ -538,6 +538,16 @@ jobs:
             echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
             docker compose pull
             docker compose up -d
+
+            # Wait for DB to be healthy then fix role passwords
+            echo "Waiting for database..."
+            sleep 10
+            PGPASSWORD="${POSTGRES_PASSWORD}" docker exec -e PGPASSWORD="${POSTGRES_PASSWORD}" billingmate-db psql -U supabase_admin -d postgres -c \
+              "ALTER ROLE supabase_auth_admin WITH PASSWORD '${POSTGRES_PASSWORD}'; ALTER ROLE authenticator WITH PASSWORD '${POSTGRES_PASSWORD}'; ALTER ROLE supabase_storage_admin WITH PASSWORD '${POSTGRES_PASSWORD}';" || true
+
+            # Restart services that depend on correct passwords
+            docker compose restart auth rest storage realtime
+
             docker image prune -f
 
             echo "=== Deploy complete at $(date) ==="
