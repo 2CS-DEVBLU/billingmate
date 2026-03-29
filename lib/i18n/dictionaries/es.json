@@ -1,0 +1,147 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Volver",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Exito",
+    "confirm": "Confirmar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "refresh": "Actualizar",
+    "viewDetails": "Ver Detalles",
+    "connect": "Conectar",
+    "disconnect": "Desconectar",
+    "upgrade": "Mejorar Plan",
+    "signIn": "Iniciar Sesion",
+    "signUp": "Registrarse",
+    "signOut": "Cerrar Sesion",
+    "comingSoon": "Proximamente",
+    "underDevelopment": "En desarrollo",
+    "noData": "Sin datos",
+    "perMonth": "por mes",
+    "vsLastMonth": "vs mes anterior"
+  },
+  "nav": {
+    "overview": "Resumen",
+    "integrations": "Integraciones",
+    "team": "Equipo",
+    "billing": "Facturacion",
+    "profile": "Perfil",
+    "company": "Empresa",
+    "settings": "Configuracion",
+    "collapse": "Contraer",
+    "menu": "Menu",
+    "manage": "Gestionar"
+  },
+  "auth": {
+    "welcomeBack": "Bienvenido de nuevo",
+    "signInAccount": "Inicia sesion en tu cuenta",
+    "email": "Correo electronico",
+    "password": "Contrasena",
+    "signingIn": "Iniciando sesion...",
+    "noAccount": "No tienes una cuenta?",
+    "hasAccount": "Ya tienes una cuenta?",
+    "createAccount": "Crear cuenta",
+    "tagline": "Inteligencia de costos cloud,",
+    "taglineHighlight": "simplificada.",
+    "description": "Monitorea, analiza y optimiza tus gastos en la nube en AWS, DigitalOcean, Datadog y mas.",
+    "avgSavings": "ahorro promedio",
+    "cloudProviders": "proveedores cloud",
+    "poweredInsights": "insights inteligentes"
+  },
+  "dashboard": {
+    "welcomeBack": "Bienvenido de nuevo,",
+    "costOverview": "Aqui esta tu resumen de costos",
+    "currentMonth": "Mes Actual",
+    "previousMonth": "Mes Anterior",
+    "resources": "Recursos",
+    "activeResources": "Recursos Activos",
+    "integrations": "Integraciones",
+    "activeConnections": "Conexiones activas",
+    "trackedAcross": "Rastreados en todos los proveedores",
+    "lastMonthTotal": "Total del mes pasado",
+    "cloudProviders": "Proveedores Cloud",
+    "costBreakdown": "Desglose de Costos",
+    "getStarted": "Comienza Ahora",
+    "getStartedDesc": "Conecta tu primer proveedor cloud para comenzar a monitorear costos y optimizar gastos",
+    "connectProvider": "Conectar Proveedor",
+    "potentialSavings": "Ahorro Potencial",
+    "recommendations": "recomendaciones",
+    "currentMonthSpend": "Gasto del Mes Actual",
+    "activeServices": "Servicios Activos",
+    "lastSync": "Ultima sincronizacion"
+  },
+  "providers": {
+    "digitalocean": {
+      "name": "DigitalOcean",
+      "description": "Droplets, bases de datos y servicios"
+    },
+    "datadog": {
+      "name": "Datadog",
+      "description": "Monitoreo y observabilidad"
+    },
+    "aws": {
+      "name": "AWS",
+      "description": "EC2, S3, RDS y mas"
+    },
+    "azure": {
+      "name": "Azure",
+      "description": "Computo, almacenamiento y bases de datos"
+    }
+  },
+  "integrationSetup": {
+    "connectProvider": "Conectar",
+    "accessKeyId": "ID de Clave de Acceso",
+    "secretAccessKey": "Clave de Acceso Secreta",
+    "region": "Region",
+    "apiToken": "Token de API",
+    "apiKey": "Clave de API",
+    "appKey": "Clave de Aplicacion",
+    "requiredPermissions": "Permisos Necesarios",
+    "iamWarning": "Crea un usuario IAM dedicado con acceso de solo lectura. Nunca uses credenciales de la cuenta root."
+  },
+  "recommendations": {
+    "aiCostOptimization": "Optimizacion de Costos con IA",
+    "analyzing": "Analizando tus gastos...",
+    "analyzingDesc": "La IA esta revisando tus patrones de uso para encontrar oportunidades de optimizacion",
+    "allOptimized": "Todo optimizado!",
+    "allOptimizedDesc": "Tus gastos en la nube estan bien optimizados. Sigue monitoreando los cambios.",
+    "proFeature": "Funcion Pro",
+    "upgradeToUnlock": "Mejora tu plan para desbloquear recomendaciones con IA",
+    "basedOnUsage": "Recomendaciones basadas en los ultimos 3 meses de uso",
+    "save": "Ahorra"
+  },
+  "billing": {
+    "plans": "Planes",
+    "currentPlan": "Plan Actual",
+    "starter": "Starter",
+    "professional": "Professional",
+    "trial": "Trial",
+    "changePlan": "Cambiar Plan",
+    "manageBilling": "Gestionar Facturacion"
+  },
+  "settings": {
+    "companySettings": "Configuracion de la Empresa",
+    "companyName": "Nombre de la Empresa",
+    "industry": "Industria",
+    "companySize": "Tamano",
+    "taxId": "ID Fiscal",
+    "completeRegistration": "Completar Registro",
+    "registrationRequired": "Registro necesario para acceder a todas las funcionalidades."
+  },
+  "users": {
+    "teamMembers": "Miembros del Equipo",
+    "inviteUser": "Invitar Usuario",
+    "role": "Rol",
+    "admin": "Administrador",
+    "viewer": "Visualizador",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "pending": "Pendiente"
+  }
+}

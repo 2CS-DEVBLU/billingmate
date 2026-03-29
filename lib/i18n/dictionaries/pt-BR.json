@@ -1,0 +1,147 @@
+{
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "back": "Voltar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "confirm": "Confirmar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "refresh": "Atualizar",
+    "viewDetails": "Ver Detalhes",
+    "connect": "Conectar",
+    "disconnect": "Desconectar",
+    "upgrade": "Fazer Upgrade",
+    "signIn": "Entrar",
+    "signUp": "Cadastrar",
+    "signOut": "Sair",
+    "comingSoon": "Em breve",
+    "underDevelopment": "Em desenvolvimento",
+    "noData": "Sem dados",
+    "perMonth": "por mes",
+    "vsLastMonth": "vs mes anterior"
+  },
+  "nav": {
+    "overview": "Visao Geral",
+    "integrations": "Integracoes",
+    "team": "Equipe",
+    "billing": "Faturamento",
+    "profile": "Perfil",
+    "company": "Empresa",
+    "settings": "Configuracoes",
+    "collapse": "Recolher",
+    "menu": "Menu",
+    "manage": "Gerenciar"
+  },
+  "auth": {
+    "welcomeBack": "Bem-vindo de volta",
+    "signInAccount": "Entre na sua conta",
+    "email": "E-mail",
+    "password": "Senha",
+    "signingIn": "Entrando...",
+    "noAccount": "Nao tem uma conta?",
+    "hasAccount": "Ja tem uma conta?",
+    "createAccount": "Criar conta",
+    "tagline": "Inteligencia de custos cloud,",
+    "taglineHighlight": "simplificada.",
+    "description": "Monitore, analise e otimize seus gastos em nuvem na AWS, DigitalOcean, Datadog e mais.",
+    "avgSavings": "economia media",
+    "cloudProviders": "provedores cloud",
+    "poweredInsights": "insights inteligentes"
+  },
+  "dashboard": {
+    "welcomeBack": "Bem-vindo de volta,",
+    "costOverview": "Aqui esta sua visao geral de custos",
+    "currentMonth": "Mes Atual",
+    "previousMonth": "Mes Anterior",
+    "resources": "Recursos",
+    "activeResources": "Recursos Ativos",
+    "integrations": "Integracoes",
+    "activeConnections": "Conexoes ativas",
+    "trackedAcross": "Rastreados em todos os provedores",
+    "lastMonthTotal": "Total do mes passado",
+    "cloudProviders": "Provedores Cloud",
+    "costBreakdown": "Detalhamento de Custos",
+    "getStarted": "Comece Agora",
+    "getStartedDesc": "Conecte seu primeiro provedor cloud para comecar a monitorar custos e otimizar gastos",
+    "connectProvider": "Conectar Provedor",
+    "potentialSavings": "Economia Potencial",
+    "recommendations": "recomendacoes",
+    "currentMonthSpend": "Gasto do Mes Atual",
+    "activeServices": "Servicos Ativos",
+    "lastSync": "Ultima sync"
+  },
+  "providers": {
+    "digitalocean": {
+      "name": "DigitalOcean",
+      "description": "Droplets, bancos de dados e servicos"
+    },
+    "datadog": {
+      "name": "Datadog",
+      "description": "Monitoramento e observabilidade"
+    },
+    "aws": {
+      "name": "AWS",
+      "description": "EC2, S3, RDS e mais"
+    },
+    "azure": {
+      "name": "Azure",
+      "description": "Computacao, armazenamento e bancos de dados"
+    }
+  },
+  "integrationSetup": {
+    "connectProvider": "Conectar",
+    "accessKeyId": "ID da Chave de Acesso",
+    "secretAccessKey": "Chave de Acesso Secreta",
+    "region": "Regiao",
+    "apiToken": "Token da API",
+    "apiKey": "Chave da API",
+    "appKey": "Chave do Aplicativo",
+    "requiredPermissions": "Permissoes Necessarias",
+    "iamWarning": "Crie um usuario IAM dedicado com acesso somente leitura. Nunca use credenciais da conta root."
+  },
+  "recommendations": {
+    "aiCostOptimization": "Otimizacao de Custos com IA",
+    "analyzing": "Analisando seus gastos...",
+    "analyzingDesc": "A IA esta revisando seus padroes de uso para encontrar oportunidades de otimizacao",
+    "allOptimized": "Tudo otimizado!",
+    "allOptimizedDesc": "Seus gastos em nuvem estao bem otimizados. Continue monitorando por mudancas.",
+    "proFeature": "Recurso Pro",
+    "upgradeToUnlock": "Faca upgrade para desbloquear recomendacoes com IA",
+    "basedOnUsage": "Recomendacoes baseadas nos ultimos 3 meses de uso",
+    "save": "Economize"
+  },
+  "billing": {
+    "plans": "Planos",
+    "currentPlan": "Plano Atual",
+    "starter": "Starter",
+    "professional": "Professional",
+    "trial": "Trial",
+    "changePlan": "Trocar Plano",
+    "manageBilling": "Gerenciar Faturamento"
+  },
+  "settings": {
+    "companySettings": "Configuracoes da Empresa",
+    "companyName": "Nome da Empresa",
+    "industry": "Setor",
+    "companySize": "Tamanho",
+    "taxId": "CNPJ/CPF",
+    "completeRegistration": "Completar Cadastro",
+    "registrationRequired": "Cadastro necessario para acessar todas as funcionalidades."
+  },
+  "users": {
+    "teamMembers": "Membros da Equipe",
+    "inviteUser": "Convidar Usuario",
+    "role": "Funcao",
+    "admin": "Administrador",
+    "viewer": "Visualizador",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "pending": "Pendente"
+  }
+}

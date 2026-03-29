@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
 import { getUserWithCompany } from "@/lib/auth-utils"
-import { ClientNav } from "@/components/client-nav"
+
 import { RegistrationIncompleteBanner } from "@/components/registration-incomplete-banner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -24,16 +24,12 @@ export default async function DatadogDashboardPage({
 }: {
   searchParams: Promise<{ timeRange?: string }>
 }) {
-  console.log("[v0] Datadog Dashboard - Loading")
-
   const params = await searchParams
   const timeRange = params.timeRange || "1"
 
   const supabase = await createClient()
 
   const { user, profile, company, isAdmin } = await getUserWithCompany()
-
-  console.log("[v0] Datadog Dashboard - User:", user?.email)
 
   if (!user) {
     redirect("/auth/login")
@@ -56,41 +52,38 @@ export default async function DatadogDashboardPage({
 
   if (needsTaxInfo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-        <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-        <main className="container mx-auto px-4 py-8">
-          <Card className="bg-slate-800/50 border-slate-700 max-w-2xl mx-auto mt-20">
-            <CardHeader>
-              <CardTitle className="text-2xl text-white">Complete Company Registration</CardTitle>
-              <CardDescription className="text-slate-400">
-                Access to billing data and cost analytics is restricted until your company registration is complete.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-slate-300">
-                {isAdmin ? (
-                  <>
-                    As a company administrator, you need to complete the company registration by providing required tax information before accessing cost analytics.
-                  </>
-                ) : (
-                  <>
-                    Your company administrator needs to complete the company registration before you can access cost analytics. Please contact your administrator to complete the setup.
-                  </>
-                )}
-              </p>
-              {isAdmin && (
-                <div className="flex gap-3 pt-4">
-                  <Link href="/dashboard/settings">
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                      Complete Registration
-                    </Button>
-                  </Link>
-                </div>
+      <>
+        <Card className="glass border-white/[0.06] max-w-2xl mx-auto mt-20">
+          <CardHeader>
+            <CardTitle className="text-2xl text-white">Complete Company Registration</CardTitle>
+            <CardDescription className="text-slate-400">
+              Access to billing data and cost analytics is restricted until your company registration is complete.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-slate-300">
+              {isAdmin ? (
+                <>
+                  As a company administrator, you need to complete the company registration by providing required tax information before accessing cost analytics.
+                </>
+              ) : (
+                <>
+                  Your company administrator needs to complete the company registration before you can access cost analytics. Please contact your administrator to complete the setup.
+                </>
               )}
-            </CardContent>
-          </Card>
-        </main>
-      </div>
+            </p>
+            {isAdmin && (
+              <div className="flex gap-3 pt-4">
+                <Link href="/dashboard/settings">
+                  <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                    Complete Registration
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </>
     )
   }
 
@@ -100,8 +93,6 @@ export default async function DatadogDashboardPage({
     .eq("company_id", profile.company_id)
     .eq("provider", "datadog")
     .maybeSingle() // Changed from .single() to .maybeSingle() to handle case when integration doesn't exist
-
-  console.log("[v0] Datadog Dashboard - Integration:", integration?.id, "Error:", integrationError)
 
   if (!integration) {
     redirect("/dashboard/integrations")
@@ -135,7 +126,6 @@ export default async function DatadogDashboardPage({
       .in("billing_history_id", billingIds)
     
     resourceCosts = costs || []
-    console.log("[v0] Fetched", resourceCosts.length, "resource costs from database")
   }
 
   const displayProducts = resourceCosts
@@ -165,13 +155,8 @@ export default async function DatadogDashboardPage({
 
   const lastSync = integration.last_sync ? new Date(integration.last_sync).toLocaleString() : "Never"
 
-  console.log("[v0] Datadog Dashboard - Rendering with", billingHistory?.length, "billing records and", displayProducts.length, "products")
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900">
-      <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-
-      <main className="container mx-auto px-4 py-8">
+    <>
         {isAdmin && needsTaxInfo && (
           <RegistrationIncompleteBanner 
             isAdmin={isAdmin}
@@ -215,7 +200,7 @@ export default async function DatadogDashboardPage({
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="glass border-white/[0.06]">
             <CardHeader className="pb-3">
               <CardDescription className="text-slate-400">Current Month Spend</CardDescription>
               <CardTitle className="text-3xl text-white">${currentMonthCost.toFixed(2)}</CardTitle>
@@ -230,7 +215,7 @@ export default async function DatadogDashboardPage({
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="glass border-white/[0.06]">
             <CardHeader className="pb-3">
               <CardDescription className="text-slate-400">Active Products</CardDescription>
               <CardTitle className="text-3xl text-white">{displayProducts.length}</CardTitle>
@@ -240,7 +225,7 @@ export default async function DatadogDashboardPage({
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/50 border-slate-700">
+          <Card className="glass border-white/[0.06]">
             <CardHeader className="pb-3">
               <CardDescription className="text-slate-400">Potential Savings</CardDescription>
               <CardTitle className="text-3xl text-green-400">${totalPotentialSavings.toFixed(2)}</CardTitle>
@@ -272,7 +257,7 @@ export default async function DatadogDashboardPage({
             <TopResourceConsumers resourceCosts={displayProducts} />
           </div>
         ) : (
-          <Card className="bg-slate-800/50 border-slate-700 mb-8">
+          <Card className="glass border-white/[0.06] mb-8">
             <CardHeader>
               <CardTitle className="text-white">Product Details</CardTitle>
               <CardDescription className="text-slate-400">
@@ -295,10 +280,9 @@ export default async function DatadogDashboardPage({
             timeRange={Number.parseInt(timeRange)}
           />
         </div>
-      </main>
 
       {/* Sync Logs Dialog */}
       <SyncLogsDialogWrapper logs={syncLogs || []} />
-    </div>
+    </>
   )
 }

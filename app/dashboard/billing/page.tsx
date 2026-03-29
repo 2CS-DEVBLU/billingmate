@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getUserWithCompany } from "@/lib/auth-utils"
-import { ClientNav } from "@/components/client-nav"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -21,27 +21,24 @@ export default async function BillingPage() {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-        <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-        <main className="container mx-auto px-4 py-8">
-          <Card className="border-red-800 bg-red-900/20 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-red-300 flex items-center gap-2">
-                <ShieldAlert className="h-5 w-5" />
-                Access Denied
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-red-200 mb-4">
-                Only company administrators can access billing and subscription management.
-              </p>
-              <p className="text-red-300 text-sm">
-                Please contact your administrator if you need to manage billing.
-              </p>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
+      <>
+        <Card className="border-red-800 bg-red-900/20 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="text-red-300 flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5" />
+              Access Denied
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-red-200 mb-4">
+              Only company administrators can access billing and subscription management.
+            </p>
+            <p className="text-red-300 text-sm">
+              Please contact your administrator if you need to manage billing.
+            </p>
+          </CardContent>
+        </Card>
+      </>
     )
   }
 
@@ -51,38 +48,35 @@ export default async function BillingPage() {
       : false
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-        <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-        <main className="container mx-auto px-4 py-8">
-          <Card className="border-red-800 bg-red-900/20 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-red-300 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Account Deactivated
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-red-200">
-                Your account has been deactivated. All subscriptions have been canceled.
-              </p>
-              {canReactivate ? (
-                <Button className="bg-green-600 hover:bg-green-700 text-white">
-                  Reactivate Account
+      <>
+        <Card className="border-red-800 bg-red-900/20 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="text-red-300 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Account Deactivated
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-red-200">
+              Your account has been deactivated. All subscriptions have been canceled.
+            </p>
+            {canReactivate ? (
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                Reactivate Account
+              </Button>
+            ) : (
+              <div>
+                <p className="text-red-300 text-sm mb-2">
+                  You can reactivate your account after: {new Date(company.reactivation_allowed_at!).toLocaleDateString()}
+                </p>
+                <Button variant="outline" className="border-slate-600 text-slate-300">
+                  Contact Support
                 </Button>
-              ) : (
-                <div>
-                  <p className="text-red-300 text-sm mb-2">
-                    You can reactivate your account after: {new Date(company.reactivation_allowed_at!).toLocaleDateString()}
-                  </p>
-                  <Button variant="outline" className="border-slate-600 text-slate-300">
-                    Contact Support
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </main>
-      </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </>
     )
   }
 
@@ -153,10 +147,7 @@ export default async function BillingPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-      <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-
-      <main className="container mx-auto px-4 py-8">
+    <>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white">Billing & Subscription</h1>
           <p className="text-slate-400 mt-2">Manage your subscription and upgrade or downgrade your plan</p>
@@ -194,7 +185,7 @@ export default async function BillingPage() {
                 className={
                   plan.highlighted
                     ? "border-indigo-600 bg-gradient-to-b from-indigo-900/50 to-slate-900/50 backdrop-blur relative"
-                    : "border-slate-800 bg-slate-900/50 backdrop-blur"
+                    : "glass border-white/[0.06]"
                 }
               >
                 {plan.badge && (
@@ -262,7 +253,7 @@ export default async function BillingPage() {
           </div>
         </div>
 
-        <Card className="border-slate-800 bg-slate-900/50 backdrop-blur mt-8">
+        <Card className="glass border-white/[0.06] mt-8">
           <CardHeader>
             <CardTitle className="text-white">Danger Zone</CardTitle>
             <CardDescription className="text-slate-400">
@@ -295,7 +286,6 @@ export default async function BillingPage() {
             </div>
           </CardContent>
         </Card>
-      </main>
-    </div>
+    </>
   )
 }

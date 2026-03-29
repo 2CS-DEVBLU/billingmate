@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
 import { getUserWithCompany } from "@/lib/auth-utils"
-import { ClientNav } from "@/components/client-nav"
+
 import { RegistrationIncompleteBanner } from "@/components/registration-incomplete-banner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -61,41 +61,38 @@ export default async function IntegrationsPage() {
 
   if (needsTaxInfo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-        <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-        <main className="container mx-auto px-4 py-8">
-          <Card className="bg-slate-800/50 border-slate-700 max-w-2xl mx-auto mt-20">
-            <CardHeader>
-              <CardTitle className="text-2xl text-white">Complete Company Registration</CardTitle>
-              <CardDescription className="text-slate-400">
-                Access to cloud integrations is restricted until your company registration is complete.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-slate-300">
-                {isAdmin ? (
-                  <>
-                    As a company administrator, you need to complete the company registration by providing required tax information (CNPJ/CPF for Brazil or VAT for other countries) before managing integrations.
-                  </>
-                ) : (
-                  <>
-                    Your company administrator needs to complete the company registration before you can manage integrations. Please contact your administrator to complete the setup.
-                  </>
-                )}
-              </p>
-              {isAdmin && (
-                <div className="flex gap-3 pt-4">
-                  <Link href="/dashboard/settings">
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                      Complete Registration
-                    </Button>
-                  </Link>
-                </div>
+      <>
+        <Card className="glass border-white/[0.06] max-w-2xl mx-auto mt-20">
+          <CardHeader>
+            <CardTitle className="text-2xl text-white">Complete Company Registration</CardTitle>
+            <CardDescription className="text-slate-400">
+              Access to cloud integrations is restricted until your company registration is complete.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-slate-300">
+              {isAdmin ? (
+                <>
+                  As a company administrator, you need to complete the company registration by providing required tax information (CNPJ/CPF for Brazil or VAT for other countries) before managing integrations.
+                </>
+              ) : (
+                <>
+                  Your company administrator needs to complete the company registration before you can manage integrations. Please contact your administrator to complete the setup.
+                </>
               )}
-            </CardContent>
-          </Card>
-        </main>
-      </div>
+            </p>
+            {isAdmin && (
+              <div className="flex gap-3 pt-4">
+                <Link href="/dashboard/settings">
+                  <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                    Complete Registration
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </>
     )
   }
 
@@ -108,10 +105,7 @@ export default async function IntegrationsPage() {
   const integrationsMap = new Map(integrations?.map((i) => [i.provider, i]) || [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-      <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-
-      <main className="container mx-auto px-4 py-8">
+    <>
         {isAdmin && needsTaxInfo && (
           <RegistrationIncompleteBanner 
             isAdmin={isAdmin}
@@ -143,7 +137,7 @@ export default async function IntegrationsPage() {
                   if (!provider) return null
 
                   return (
-                    <Card key={integration.id} className="border-slate-800 bg-slate-900/50 backdrop-blur">
+                    <Card key={integration.id} className="glass border-white/[0.06]">
                       <CardHeader className="pb-3">
                         <div className="flex items-center gap-3">
                           <div className="text-3xl">{provider.logo}</div>
@@ -184,7 +178,7 @@ export default async function IntegrationsPage() {
             return (
               <Card
                 key={provider.id}
-                className={`border-slate-800 bg-slate-900/50 backdrop-blur ${!provider.enabled ? "opacity-60" : ""}`}
+                className={`glass border-white/[0.06] ${!provider.enabled ? "opacity-60" : ""}`}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -257,7 +251,6 @@ export default async function IntegrationsPage() {
             )
           })}
         </div>
-      </main>
-    </div>
+    </>
   )
 }

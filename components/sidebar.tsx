@@ -20,6 +20,8 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { useI18n } from "@/lib/i18n/context"
 
 interface SidebarProps {
   companyName?: string
@@ -31,6 +33,7 @@ export function Sidebar({ companyName, isAdmin = false, userRole }: SidebarProps
   const pathname = usePathname()
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
+  const { t } = useI18n()
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -39,20 +42,20 @@ export function Sidebar({ companyName, isAdmin = false, userRole }: SidebarProps
   }
 
   const mainLinks = [
-    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-    { href: "/dashboard/integrations", label: "Integrations", icon: Cloud },
+    { href: "/dashboard", label: t.nav.overview, icon: LayoutDashboard },
+    { href: "/dashboard/integrations", label: t.nav.integrations, icon: Cloud },
   ]
 
   const adminLinks = isAdmin
     ? [
-        { href: "/dashboard/users", label: "Team", icon: Users },
-        { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
+        { href: "/dashboard/users", label: t.nav.team, icon: Users },
+        { href: "/dashboard/billing", label: t.nav.billing, icon: CreditCard },
       ]
     : []
 
   const settingsLinks = [
-    { href: "/dashboard/profile", label: "Profile", icon: User },
-    ...(isAdmin ? [{ href: "/dashboard/settings", label: "Company", icon: Building }] : []),
+    { href: "/dashboard/profile", label: t.nav.profile, icon: User },
+    ...(isAdmin ? [{ href: "/dashboard/settings", label: t.nav.company, icon: Building }] : []),
   ]
 
   const isActive = (href: string) => {
@@ -87,7 +90,7 @@ export function Sidebar({ companyName, isAdmin = false, userRole }: SidebarProps
         <div className="space-y-1">
           {!collapsed && (
             <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-              Menu
+              {t.nav.menu}
             </p>
           )}
           {mainLinks.map((link) => (
@@ -111,7 +114,7 @@ export function Sidebar({ companyName, isAdmin = false, userRole }: SidebarProps
           <div className="mt-6 space-y-1">
             {!collapsed && (
               <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-                Manage
+                {t.nav.manage}
               </p>
             )}
             {adminLinks.map((link) => (
@@ -135,7 +138,7 @@ export function Sidebar({ companyName, isAdmin = false, userRole }: SidebarProps
         <div className="mt-6 space-y-1">
           {!collapsed && (
             <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-              Settings
+              {t.nav.settings}
             </p>
           )}
           {settingsLinks.map((link) => (
@@ -158,12 +161,14 @@ export function Sidebar({ companyName, isAdmin = false, userRole }: SidebarProps
 
       {/* Footer */}
       <div className="border-t border-white/[0.06] p-3 space-y-1">
+        <LanguageSwitcher collapsed={collapsed} />
+
         <button
           onClick={handleSignOut}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition-all hover:bg-red-500/10 hover:text-red-400"
         >
           <LogOut className="h-4 w-4 shrink-0" />
-          {!collapsed && <span>Sign Out</span>}
+          {!collapsed && <span>{t.common.signOut}</span>}
         </button>
 
         <button
@@ -171,7 +176,7 @@ export function Sidebar({ companyName, isAdmin = false, userRole }: SidebarProps
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-slate-500 transition-all hover:bg-white/[0.04] hover:text-slate-400"
         >
           {collapsed ? <ChevronRight className="h-4 w-4 shrink-0" /> : <ChevronLeft className="h-4 w-4 shrink-0" />}
-          {!collapsed && <span>Collapse</span>}
+          {!collapsed && <span>{t.nav.collapse}</span>}
         </button>
       </div>
     </aside>

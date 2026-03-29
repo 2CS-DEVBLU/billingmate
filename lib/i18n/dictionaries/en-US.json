@@ -1,0 +1,147 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "refresh": "Refresh",
+    "viewDetails": "View Details",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "upgrade": "Upgrade",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "comingSoon": "Coming Soon",
+    "underDevelopment": "Under Development",
+    "noData": "No data",
+    "perMonth": "per month",
+    "vsLastMonth": "vs last month"
+  },
+  "nav": {
+    "overview": "Overview",
+    "integrations": "Integrations",
+    "team": "Team",
+    "billing": "Billing",
+    "profile": "Profile",
+    "company": "Company",
+    "settings": "Settings",
+    "collapse": "Collapse",
+    "menu": "Menu",
+    "manage": "Manage"
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "signInAccount": "Sign in to your account",
+    "email": "Email",
+    "password": "Password",
+    "signingIn": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "createAccount": "Create account",
+    "tagline": "Cloud cost intelligence,",
+    "taglineHighlight": "simplified.",
+    "description": "Monitor, analyze and optimize your cloud spending across AWS, DigitalOcean, Datadog and more.",
+    "avgSavings": "avg. savings",
+    "cloudProviders": "cloud providers",
+    "poweredInsights": "powered insights"
+  },
+  "dashboard": {
+    "welcomeBack": "Welcome back,",
+    "costOverview": "Here's your cloud cost overview",
+    "currentMonth": "Current Month",
+    "previousMonth": "Previous Month",
+    "resources": "Resources",
+    "activeResources": "Active Resources",
+    "integrations": "Integrations",
+    "activeConnections": "Active connections",
+    "trackedAcross": "Tracked across all providers",
+    "lastMonthTotal": "Last month total",
+    "cloudProviders": "Cloud Providers",
+    "costBreakdown": "Cost Breakdown",
+    "getStarted": "Get Started",
+    "getStartedDesc": "Connect your first cloud provider to start tracking costs and optimizing spending",
+    "connectProvider": "Connect Provider",
+    "potentialSavings": "Potential Savings",
+    "recommendations": "recommendations",
+    "currentMonthSpend": "Current Month Spend",
+    "activeServices": "Active Services",
+    "lastSync": "Last sync"
+  },
+  "providers": {
+    "digitalocean": {
+      "name": "DigitalOcean",
+      "description": "Droplets, databases & services"
+    },
+    "datadog": {
+      "name": "Datadog",
+      "description": "Monitoring & observability"
+    },
+    "aws": {
+      "name": "AWS",
+      "description": "EC2, S3, RDS & more"
+    },
+    "azure": {
+      "name": "Azure",
+      "description": "Compute, storage & databases"
+    }
+  },
+  "integrationSetup": {
+    "connectProvider": "Connect",
+    "accessKeyId": "Access Key ID",
+    "secretAccessKey": "Secret Access Key",
+    "region": "Region",
+    "apiToken": "API Token",
+    "apiKey": "API Key",
+    "appKey": "Application Key",
+    "requiredPermissions": "Required Permissions",
+    "iamWarning": "Create a dedicated IAM user with read-only access. Never use root account credentials."
+  },
+  "recommendations": {
+    "aiCostOptimization": "AI Cost Optimization",
+    "analyzing": "Analyzing your spending...",
+    "analyzingDesc": "AI is reviewing your usage patterns to find optimization opportunities",
+    "allOptimized": "All optimized!",
+    "allOptimizedDesc": "Your cloud spending is well-optimized. Keep monitoring for changes.",
+    "proFeature": "Pro Feature",
+    "upgradeToUnlock": "Upgrade to unlock AI-powered recommendations",
+    "basedOnUsage": "AI-powered recommendations based on your last 3 months usage",
+    "save": "Save"
+  },
+  "billing": {
+    "plans": "Plans",
+    "currentPlan": "Current Plan",
+    "starter": "Starter",
+    "professional": "Professional",
+    "trial": "Trial",
+    "changePlan": "Change Plan",
+    "manageBilling": "Manage Billing"
+  },
+  "settings": {
+    "companySettings": "Company Settings",
+    "companyName": "Company Name",
+    "industry": "Industry",
+    "companySize": "Company Size",
+    "taxId": "Tax ID",
+    "completeRegistration": "Complete Registration",
+    "registrationRequired": "Registration required to access all features."
+  },
+  "users": {
+    "teamMembers": "Team Members",
+    "inviteUser": "Invite User",
+    "role": "Role",
+    "admin": "Administrator",
+    "viewer": "Viewer",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending"
+  }
+}
