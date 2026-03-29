@@ -1,388 +1,212 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, TrendingDown, Brain, Shield, Zap, Globe, LineChart, Check } from 'lucide-react'
+import { ArrowRight, Brain, Shield, Zap, Globe, LineChart, Check, BarChart3 } from "lucide-react"
+import { useI18n } from "@/lib/i18n/context"
+import { AuthLanguageSwitcher } from "@/components/auth-language-switcher"
 
 export default function HomePage() {
+  const { t } = useI18n()
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
+    <div className="min-h-screen bg-[#0b0b14]">
       {/* Header */}
-      <header className="border-b border-slate-800/50 backdrop-blur-sm">
+      <header className="border-b border-white/[0.06] backdrop-blur-xl sticky top-0 z-50 bg-[#0b0b14]/80">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-              <TrendingDown className="h-5 w-5 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <BarChart3 className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-white">BillingMate</span>
+            <span className="text-lg font-bold text-white tracking-tight">BillingMate</span>
           </div>
           <nav className="hidden gap-6 md:flex">
-            <Link href="#features" className="text-sm text-slate-300 hover:text-white">
+            <Link href="#features" className="text-sm text-slate-400 hover:text-white transition-colors">
               Features
             </Link>
-            <Link href="#pricing" className="text-sm text-slate-300 hover:text-white">
+            <Link href="#pricing" className="text-sm text-slate-400 hover:text-white transition-colors">
               Pricing
-            </Link>
-            <Link href="#about" className="text-sm text-slate-300 hover:text-white">
-              About
             </Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" asChild className="text-slate-300 hover:text-white">
-              <Link href="/auth/login">Sign In</Link>
+            <AuthLanguageSwitcher />
+            <Button variant="ghost" asChild className="text-slate-400 hover:text-white">
+              <Link href="/auth/login">{t.common.signIn}</Link>
             </Button>
-            <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
-              <Link href="/auth/sign-up">Get Started</Link>
+            <Button asChild className="bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white shadow-lg shadow-indigo-500/20">
+              <Link href="/auth/sign-up">{t.common.signUp}</Link>
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-24 text-center">
-        <Badge className="mb-6 bg-indigo-900/50 text-indigo-300 border-indigo-800">FinOps Intelligence Platform</Badge>
-        <h1 className="mb-6 text-5xl font-bold leading-tight text-white md:text-6xl lg:text-7xl text-balance">
-          Optimize Your Cloud Costs with AI-Powered Insights
-        </h1>
-        <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-300 leading-relaxed text-balance">
-          BillingMate helps engineering and finance teams reduce cloud spending by up to 40% through intelligent cost
-          analysis, real-time monitoring, and automated recommendations.
-        </p>
-        <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-          <Button size="lg" asChild className="bg-indigo-600 hover:bg-indigo-700 text-base">
-            <Link href="/auth/sign-up">
-              Start Free Trial
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-slate-700 bg-slate-900/50 text-white hover:bg-slate-800 text-base"
-          >
-            View Demo
-          </Button>
-        </div>
-        <p className="mt-6 text-sm text-slate-500">Free trial • No credit card required • Cancel anytime • Upgrade to a paid plan anytime</p>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="container mx-auto px-4 py-20">
-        <div className="mb-16 text-center">
-          <h2 className="mb-4 text-4xl font-bold text-white">Everything You Need for Cloud Cost Management</h2>
-          <p className="mx-auto max-w-2xl text-slate-400">
-            Comprehensive FinOps platform with AI-driven insights to help you understand, optimize, and control your
-            cloud spending.
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute top-20 left-1/4 h-96 w-96 rounded-full bg-indigo-500/5 blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 h-64 w-64 rounded-full bg-violet-500/5 blur-3xl" />
+        <div className="container mx-auto px-4 py-28 text-center relative z-10">
+          <Badge className="mb-6 bg-indigo-500/10 text-indigo-300 border-indigo-500/20">FinOps Intelligence Platform</Badge>
+          <h1 className="mb-6 text-5xl font-bold leading-tight text-white md:text-6xl lg:text-7xl text-balance">
+            {t.auth.tagline}{" "}
+            <span className="gradient-text">{t.auth.taglineHighlight}</span>
+          </h1>
+          <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-400 leading-relaxed text-balance">
+            {t.auth.description}
           </p>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
-            <CardHeader>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-900/50">
-                <Brain className="h-6 w-6 text-indigo-400" />
-              </div>
-              <CardTitle className="text-white">AI-Powered Recommendations</CardTitle>
-              <CardDescription className="text-slate-400">
-                Get intelligent suggestions to reduce costs based on your usage patterns and industry best practices.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
-            <CardHeader>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-900/50">
-                <LineChart className="h-6 w-6 text-indigo-400" />
-              </div>
-              <CardTitle className="text-white">Real-Time Cost Analytics</CardTitle>
-              <CardDescription className="text-slate-400">
-                Monitor your cloud spending in real-time with detailed breakdowns by service, project, and team.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
-            <CardHeader>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-900/50">
-                <Shield className="h-6 w-6 text-indigo-400" />
-              </div>
-              <CardTitle className="text-white">Budget Alerts & Anomaly Detection</CardTitle>
-              <CardDescription className="text-slate-400">
-                Set custom budgets and get instant alerts when spending exceeds thresholds or unusual patterns are
-                detected.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
-            <CardHeader>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-900/50">
-                <Globe className="h-6 w-6 text-indigo-400" />
-              </div>
-              <CardTitle className="text-white">Multi-Cloud Support</CardTitle>
-              <CardDescription className="text-slate-400">
-                Unified view across AWS, Azure, and Google Cloud Platform. Manage all your cloud accounts in one place.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
-            <CardHeader>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-900/50">
-                <Zap className="h-6 w-6 text-indigo-400" />
-              </div>
-              <CardTitle className="text-white">Automated Cost Optimization</CardTitle>
-              <CardDescription className="text-slate-400">
-                Identify and eliminate waste automatically. Rightsize instances, delete unused resources, and more.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
-            <CardHeader>
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-900/50">
-                <TrendingDown className="h-6 w-6 text-indigo-400" />
-              </div>
-              <CardTitle className="text-white">Savings Tracking</CardTitle>
-              <CardDescription className="text-slate-400">
-                Track your cost savings over time and measure the ROI of your optimization efforts.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="container mx-auto px-4 py-20">
-        <div className="mb-16 text-center">
-          <h2 className="mb-4 text-4xl font-bold text-white">Simple, Transparent Pricing</h2>
-          <p className="mx-auto max-w-2xl text-slate-400">
-            Choose the plan that fits your organization. Start with a free trial.
-          </p>
-        </div>
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Trial Plan */}
-          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-white">Trial</CardTitle>
-              <CardDescription className="text-slate-400">Perfect for getting started</CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold text-white">Free</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Up to $5K monthly cloud spend</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">1 cloud account</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Real-time cost monitoring</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Basic recommendations</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Email support</span>
-                </li>
-              </ul>
-              <Button asChild className="w-full bg-slate-800 hover:bg-slate-700 text-white">
-                <Link href="/auth/sign-up">Start Free Trial</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Starter Plan */}
-          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-white">Starter</CardTitle>
-              <CardDescription className="text-slate-400">Perfect for small teams and startups</CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold text-white">$19.90</span>
-                <span className="text-slate-400">/month</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Up to $50K monthly cloud spend</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">3 cloud accounts</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Real-time cost monitoring</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Basic recommendations</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Email support</span>
-                </li>
-              </ul>
-              <Button asChild className="w-full bg-slate-800 hover:bg-slate-700 text-white">
-                <Link href="/auth/sign-up">Start Free Trial</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Professional Plan */}
-          <Card className="border-indigo-600 bg-gradient-to-b from-indigo-900/50 to-slate-900/50 backdrop-blur relative">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <Badge className="bg-slate-600 text-white border-slate-500">Coming Soon</Badge>
-            </div>
-            <CardHeader>
-              <CardTitle className="text-white">Professional</CardTitle>
-              <CardDescription className="text-slate-300">
-                For growing companies with significant cloud usage
-              </CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold text-white">$99.90</span>
-                <span className="text-slate-400">/month</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Up to $250K monthly cloud spend</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">10 cloud accounts</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Advanced AI recommendations</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Anomaly detection</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Custom budget alerts</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-300">Priority support</span>
-                </li>
-              </ul>
-              <Button disabled className="w-full bg-slate-700 text-slate-400">
-                Coming Soon
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 py-20">
-        <Card className="border-indigo-800 bg-gradient-to-r from-indigo-900/50 to-slate-900/50 backdrop-blur">
-          <CardContent className="flex flex-col items-center gap-6 py-16 text-center">
-            <h2 className="text-3xl font-bold text-white md:text-4xl text-balance">
-              Ready to Start Saving on Cloud Costs?
-            </h2>
-            <p className="max-w-2xl text-lg text-slate-300 text-balance">
-              Join hundreds of companies already optimizing their cloud spending with BillingMate. Start your free trial
-              today.
-            </p>
-            <Button size="lg" asChild className="bg-indigo-600 hover:bg-indigo-700">
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+            <Button size="lg" asChild className="bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white text-base shadow-lg shadow-indigo-500/20">
               <Link href="/auth/sign-up">
-                Get Started Free
+                {t.auth.createAccount}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+
+          <div className="mt-16 flex justify-center gap-8 text-sm text-slate-500">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">40%</div>
+              <div>{t.auth.avgSavings}</div>
+            </div>
+            <div className="w-px bg-white/10" />
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">3+</div>
+              <div>{t.auth.cloudProviders}</div>
+            </div>
+            <div className="w-px bg-white/10" />
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">AI</div>
+              <div>{t.auth.poweredInsights}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="container mx-auto px-4 py-20">
+        <div className="mb-16 text-center">
+          <h2 className="mb-4 text-3xl font-bold text-white">Features</h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[
+            { icon: Brain, title: "AI Recommendations", desc: "Intelligent cost optimization suggestions based on usage patterns.", color: "from-indigo-500 to-violet-500" },
+            { icon: LineChart, title: "Real-Time Analytics", desc: "Monitor cloud spending with detailed breakdowns by service.", color: "from-emerald-500 to-teal-500" },
+            { icon: Shield, title: "Budget Alerts", desc: "Custom budgets with instant alerts when thresholds are exceeded.", color: "from-orange-500 to-amber-500" },
+            { icon: Globe, title: "Multi-Cloud", desc: "Unified view across AWS, DigitalOcean, Datadog and more.", color: "from-blue-500 to-cyan-500" },
+            { icon: Zap, title: "Auto Optimization", desc: "Identify waste automatically. Rightsize instances, delete unused resources.", color: "from-violet-500 to-purple-500" },
+            { icon: BarChart3, title: "Savings Tracking", desc: "Track cost savings over time and measure optimization ROI.", color: "from-pink-500 to-rose-500" },
+          ].map((feature) => (
+            <div key={feature.title} className="glass border-white/[0.06] rounded-xl p-6 glass-hover transition-all duration-300">
+              <div className={`mb-4 h-10 w-10 rounded-lg bg-gradient-to-br ${feature.color} flex items-center justify-center shadow-lg`}>
+                <feature.icon className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="text-white font-semibold mb-2">{feature.title}</h3>
+              <p className="text-sm text-slate-400">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="container mx-auto px-4 py-20">
+        <div className="mb-16 text-center">
+          <h2 className="mb-4 text-3xl font-bold text-white">{t.billing.plans}</h2>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-3 max-w-5xl mx-auto">
+          {/* Trial */}
+          <div className="glass border-white/[0.06] rounded-2xl p-6">
+            <h3 className="text-white font-semibold text-lg">{t.billing.trial}</h3>
+            <div className="mt-3 mb-6">
+              <span className="text-4xl font-bold text-white">Free</span>
+            </div>
+            <ul className="space-y-3 mb-6">
+              {["$5K cloud spend", "1 integration", "3-month analysis", "Basic recommendations"].map((item) => (
+                <li key={item} className="flex items-center gap-2 text-sm text-slate-400">
+                  <Check className="h-4 w-4 text-indigo-400 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Button asChild className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10">
+              <Link href="/auth/sign-up">{t.auth.createAccount}</Link>
+            </Button>
+          </div>
+
+          {/* Starter */}
+          <div className="glass border-indigo-500/30 rounded-2xl p-6 relative glow-sm">
+            <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-500/20 text-indigo-300 border-indigo-500/30">Popular</Badge>
+            <h3 className="text-white font-semibold text-lg">{t.billing.starter}</h3>
+            <div className="mt-3 mb-6">
+              <span className="text-4xl font-bold text-white">$19.90</span>
+              <span className="text-slate-500">/mo</span>
+            </div>
+            <ul className="space-y-3 mb-6">
+              {["$50K cloud spend", "3 integrations", "6-month analysis", "AI recommendations", "Email support"].map((item) => (
+                <li key={item} className="flex items-center gap-2 text-sm text-slate-300">
+                  <Check className="h-4 w-4 text-indigo-400 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Button asChild className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white shadow-lg shadow-indigo-500/20">
+              <Link href="/auth/sign-up">{t.auth.createAccount}</Link>
+            </Button>
+          </div>
+
+          {/* Professional */}
+          <div className="glass border-white/[0.06] rounded-2xl p-6">
+            <h3 className="text-white font-semibold text-lg">{t.billing.professional}</h3>
+            <div className="mt-3 mb-6">
+              <span className="text-4xl font-bold text-white">$99.90</span>
+              <span className="text-slate-500">/mo</span>
+            </div>
+            <ul className="space-y-3 mb-6">
+              {["$250K cloud spend", "10 integrations", "12-month analysis", "AI + anomaly detection", "Custom budget alerts", "Priority support"].map((item) => (
+                <li key={item} className="flex items-center gap-2 text-sm text-slate-400">
+                  <Check className="h-4 w-4 text-indigo-400 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Button asChild className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10">
+              <Link href="/auth/sign-up">{t.auth.createAccount}</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="glass border-indigo-500/20 rounded-2xl p-12 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-violet-500/5" />
+          <div className="relative z-10">
+            <h2 className="text-3xl font-bold text-white mb-4">Ready to optimize?</h2>
+            <p className="max-w-lg mx-auto text-slate-400 mb-8">{t.auth.description}</p>
+            <Button size="lg" asChild className="bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white shadow-lg shadow-indigo-500/20">
+              <Link href="/auth/sign-up">
+                {t.auth.createAccount}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/50 bg-slate-950/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid gap-8 md:grid-cols-4">
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-                  <TrendingDown className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-lg font-bold text-white">BillingMate</span>
+      <footer className="border-t border-white/[0.06]">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+                <BarChart3 className="h-4 w-4 text-white" />
               </div>
-              <p className="text-sm text-slate-400">AI-powered FinOps platform for cloud cost optimization.</p>
+              <span className="text-sm font-semibold text-white">BillingMate</span>
             </div>
-            <div>
-              <h3 className="mb-4 text-sm font-semibold text-white">Product</h3>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>
-                  <Link href="#features" className="hover:text-white">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#pricing" className="hover:text-white">
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Documentation
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-sm font-semibold text-white">Company</h3>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Careers
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-sm font-semibold text-white">Legal</h3>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Privacy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Terms
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Security
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            <p className="text-xs text-slate-600">
+              Powered by <span className="text-slate-500">2CS Consulting</span>
+            </p>
           </div>
-          
         </div>
       </footer>
     </div>
