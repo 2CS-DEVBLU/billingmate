@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
 import { getUserWithCompany } from "@/lib/auth-utils"
-import { ClientNav } from "@/components/client-nav"
 import { RegistrationIncompleteBanner } from "@/components/registration-incomplete-banner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -50,10 +49,8 @@ export default async function AwsDashboardPage({
 
   if (needsTaxInfo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-        <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-        <main className="container mx-auto px-4 py-8">
-          <Card className="bg-slate-800/50 border-slate-700 max-w-2xl mx-auto mt-20">
+      <div>
+          <Card className="glass border-white/[0.06] max-w-2xl mx-auto mt-20">
             <CardHeader>
               <CardTitle className="text-2xl text-white">Complete Company Registration</CardTitle>
               <CardDescription className="text-slate-400">
@@ -83,7 +80,6 @@ export default async function AwsDashboardPage({
               )}
             </CardContent>
           </Card>
-        </main>
       </div>
     )
   }
@@ -153,10 +149,7 @@ export default async function AwsDashboardPage({
   const lastSync = integration.last_sync ? new Date(integration.last_sync).toLocaleString() : "Never"
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-      <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-
-      <main className="container mx-auto px-4 py-8">
+    <>
         {isAdmin && needsTaxInfo && (
           <RegistrationIncompleteBanner
             isAdmin={isAdmin}
@@ -279,9 +272,8 @@ export default async function AwsDashboardPage({
             timeRange={Number.parseInt(timeRange)}
           />
         </div>
-      </main>
 
       <SyncLogsDialogWrapper logs={syncLogs || []} />
-    </div>
+    </>
   )
 }

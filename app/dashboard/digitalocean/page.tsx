@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/server"
 import { getUserWithCompany } from "@/lib/auth-utils"
-import { ClientNav } from "@/components/client-nav"
 import { RegistrationIncompleteBanner } from "@/components/registration-incomplete-banner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -24,8 +23,6 @@ export default async function DigitalOceanDashboardPage({
 }: {
   searchParams: Promise<{ timeRange?: string }>
 }) {
-  console.log("[v0] DigitalOcean Dashboard - Loading")
-
   const params = await searchParams
   const timeRange = params.timeRange || "1"
 
@@ -33,7 +30,6 @@ export default async function DigitalOceanDashboardPage({
 
   const { user, profile, company, isAdmin } = await getUserWithCompany()
 
-  console.log("[v0] DigitalOcean Dashboard - User:", user?.email)
 
   if (!user) {
     redirect("/auth/login")
@@ -56,10 +52,8 @@ export default async function DigitalOceanDashboardPage({
 
   if (needsTaxInfo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-        <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-        <main className="container mx-auto px-4 py-8">
-          <Card className="bg-slate-800/50 border-slate-700 max-w-2xl mx-auto mt-20">
+      <div>
+          <Card className="glass border-white/[0.06] max-w-2xl mx-auto mt-20">
             <CardHeader>
               <CardTitle className="text-2xl text-white">Complete Company Registration</CardTitle>
               <CardDescription className="text-slate-400">
@@ -89,7 +83,6 @@ export default async function DigitalOceanDashboardPage({
               )}
             </CardContent>
           </Card>
-        </main>
       </div>
     )
   }
@@ -101,7 +94,6 @@ export default async function DigitalOceanDashboardPage({
     .eq("provider", "digitalocean")
     .single()
 
-  console.log("[v0] DigitalOcean Dashboard - Integration:", integration?.id, "Error:", integrationError)
 
   if (!integration) {
     redirect("/dashboard/integrations")
@@ -135,12 +127,6 @@ export default async function DigitalOceanDashboardPage({
       .in("billing_history_id", billingIds)
     
     resourceCosts = costs || []
-    console.log("[v0] Fetched", resourceCosts.length, "resource costs from database")
-    
-    // Debug: Log first resource to see structure
-    if (resourceCosts.length > 0) {
-      console.log("[v0] First resource from DB:", JSON.stringify(resourceCosts[0]))
-    }
   }
 
   // Use resource_costs directly - they have all the product information
@@ -171,13 +157,9 @@ export default async function DigitalOceanDashboardPage({
 
   const lastSync = integration.last_sync ? new Date(integration.last_sync).toLocaleString() : "Never"
 
-  console.log("[v0] DigitalOcean Dashboard - Rendering with", billingHistory?.length, "billing records and", displayProducts.length, "products")
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
-      <ClientNav companyName={company?.name} isAdmin={isAdmin} />
-
-      <main className="container mx-auto px-4 py-8">
+    <>
         {isAdmin && needsTaxInfo && (
           <RegistrationIncompleteBanner 
             isAdmin={isAdmin}
@@ -301,10 +283,9 @@ export default async function DigitalOceanDashboardPage({
             timeRange={Number.parseInt(timeRange)}
           />
         </div>
-      </main>
 
       {/* Sync Logs Dialog */}
       <SyncLogsDialogWrapper logs={syncLogs || []} />
-    </div>
+    </>
   )
 }
