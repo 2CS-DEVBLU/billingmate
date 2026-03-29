@@ -14,7 +14,7 @@ export function SyncDataButton({
   integrationId: string
   canSync: boolean
   cooldownRemaining: number
-  provider?: "digitalocean" | "datadog" // Added provider type
+  provider?: "digitalocean" | "datadog" | "aws"
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()

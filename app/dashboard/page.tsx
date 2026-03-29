@@ -27,7 +27,6 @@ const AVAILABLE_PROVIDERS = [
     name: "Amazon Web Services",
     description: "Track costs across EC2, S3, RDS, and other AWS services",
     logo: "☁️",
-    comingSoon: true,
   },
   {
     id: "azure",

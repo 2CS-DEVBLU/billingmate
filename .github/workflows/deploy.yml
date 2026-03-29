@@ -1,0 +1,528 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [Production]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      anon_key: ${{ steps.jwt.outputs.anon_key }}
+      service_role_key: ${{ steps.jwt.outputs.service_role_key }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Supabase JWT keys
+        id: jwt
+        run: |
+          node -e "
+          const crypto = require('crypto');
+          const secret = '${{ secrets.JWT_SECRET }}';
+          function sign(payload) {
+            const h = Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url');
+            const b = Buffer.from(JSON.stringify(payload)).toString('base64url');
+            const s = crypto.createHmac('sha256', secret).update(h+'.'+b).digest('base64url');
+            return h+'.'+b+'.'+s;
+          }
+          const iat = 1729728000;
+          const exp = 1893456000; // 2030
+          const anon = sign({role:'anon',iss:'supabase',iat,exp});
+          const service = sign({role:'service_role',iss:'supabase',iat,exp});
+          console.log('anon_key='+anon);
+          console.log('service_role_key='+service);
+          " >> "$GITHUB_OUTPUT"
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NEXT_PUBLIC_SUPABASE_URL=https://api.billing-mate.com
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ steps.jwt.outputs.anon_key }}
+            NEXT_PUBLIC_SITE_URL=https://billing-mate.com
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+
+  deploy:
+    name: Deploy to VPS
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy all services
+        uses: appleboy/ssh-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_REPO: ${{ github.repository }}
+          # Supabase
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ANON_KEY: ${{ needs.build.outputs.anon_key }}
+          SERVICE_ROLE_KEY: ${{ needs.build.outputs.service_role_key }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
+          # App
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          envs: GITHUB_TOKEN,GITHUB_ACTOR,GITHUB_REPO,JWT_SECRET,ANON_KEY,SERVICE_ROLE_KEY,POSTGRES_PASSWORD,DASHBOARD_PASSWORD,STRIPE_SECRET_KEY,NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,CRON_SECRET,XAI_API_KEY,RESEND_API_KEY
+          command_timeout: 10m
+          script: |
+            set -e
+
+            # =============================================
+            # 1. Install Docker
+            # =============================================
+            if ! command -v docker &> /dev/null; then
+              apt-get update -qq
+              apt-get install -y -qq ca-certificates curl
+              curl -fsSL https://get.docker.com | sh
+              systemctl enable docker && systemctl start docker
+            fi
+            if ! docker compose version &> /dev/null; then
+              apt-get install -y -qq docker-compose-plugin
+            fi
+
+            # =============================================
+            # 2. Firewall
+            # =============================================
+            if command -v ufw &> /dev/null; then
+              ufw allow 22/tcp >/dev/null 2>&1 || true
+              ufw allow 80/tcp >/dev/null 2>&1 || true
+              echo "y" | ufw enable >/dev/null 2>&1 || true
+            fi
+
+            # =============================================
+            # 3. Directories
+            # =============================================
+            mkdir -p /opt/billingmate/nginx
+            mkdir -p /opt/billingmate/volumes/db/data
+            mkdir -p /opt/billingmate/volumes/storage
+
+            # =============================================
+            # 4. .env.production (Next.js app)
+            # =============================================
+            cat > /opt/billingmate/.env.production <<EOF
+            NEXT_PUBLIC_SUPABASE_URL=https://api.billing-mate.com
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${ANON_KEY}
+            SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}
+            STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+            NEXT_PUBLIC_SITE_URL=https://billing-mate.com
+            CRON_SECRET=${CRON_SECRET}
+            XAI_API_KEY=${XAI_API_KEY}
+            RESEND_API_KEY=${RESEND_API_KEY}
+            EOF
+
+            # =============================================
+            # 5. Nginx config (two server blocks)
+            # =============================================
+            cat > /opt/billingmate/nginx/nginx.conf <<'NGINXEOF'
+            worker_processes auto;
+            events { worker_connections 1024; }
+            http {
+              include /etc/nginx/mime.types;
+              default_type application/octet-stream;
+              sendfile on;
+              keepalive_timeout 65;
+              client_max_body_size 50M;
+              gzip on;
+              gzip_vary on;
+              gzip_proxied any;
+              gzip_comp_level 6;
+              gzip_types text/plain text/css application/json application/javascript text/xml application/xml image/svg+xml;
+              limit_req_zone $binary_remote_addr zone=api:10m rate=30r/s;
+
+              # Next.js app
+              server {
+                listen 80;
+                server_name billing-mate.com www.billing-mate.com;
+
+                location /_next/static {
+                  proxy_pass http://app:3000;
+                  add_header Cache-Control "public, max-age=31536000, immutable";
+                }
+                location /api/ {
+                  limit_req zone=api burst=20 nodelay;
+                  proxy_pass http://app:3000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto https;
+                  proxy_read_timeout 120s;
+                }
+                location / {
+                  proxy_pass http://app:3000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection "upgrade";
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto https;
+                }
+              }
+
+              # Supabase API (Kong)
+              server {
+                listen 80;
+                server_name api.billing-mate.com;
+
+                location / {
+                  proxy_pass http://kong:8000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection "upgrade";
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto https;
+                  proxy_read_timeout 120s;
+                  proxy_send_timeout 120s;
+                }
+              }
+
+              # Supabase Studio (optional, protected)
+              server {
+                listen 80;
+                server_name studio.billing-mate.com;
+
+                location / {
+                  proxy_pass http://studio:3000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection "upgrade";
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto https;
+                }
+              }
+            }
+            NGINXEOF
+
+            # =============================================
+            # 6. Kong config for Supabase
+            # =============================================
+            cat > /opt/billingmate/volumes/kong.yml <<KONGEOF
+            _format_version: "2.1"
+            _transform: true
+
+            services:
+              - name: auth-v1
+                url: http://auth:9999/verify
+                routes:
+                  - name: auth-v1
+                    strip_path: true
+                    paths:
+                      - /auth/v1/verify
+                plugins:
+                  - name: cors
+
+              - name: auth
+                url: http://auth:9999
+                routes:
+                  - name: auth-all
+                    strip_path: true
+                    paths:
+                      - /auth/v1/
+                plugins:
+                  - name: cors
+
+              - name: rest
+                url: http://rest:3000
+                routes:
+                  - name: rest
+                    strip_path: true
+                    paths:
+                      - /rest/v1/
+                plugins:
+                  - name: cors
+
+              - name: realtime
+                url: http://realtime:4000/socket
+                routes:
+                  - name: realtime
+                    strip_path: true
+                    paths:
+                      - /realtime/v1/
+                plugins:
+                  - name: cors
+
+              - name: storage
+                url: http://storage:5000
+                routes:
+                  - name: storage
+                    strip_path: true
+                    paths:
+                      - /storage/v1/
+                plugins:
+                  - name: cors
+
+              - name: meta
+                url: http://meta:8080
+                routes:
+                  - name: meta
+                    strip_path: true
+                    paths:
+                      - /pg/
+                plugins:
+                  - name: cors
+            KONGEOF
+
+            # =============================================
+            # 7. docker-compose.yml
+            # =============================================
+            cat > /opt/billingmate/docker-compose.yml <<COMPOSEEOF
+            services:
+              # ---------- Supabase ----------
+              db:
+                image: supabase/postgres:15.8.1.060
+                container_name: billingmate-db
+                restart: unless-stopped
+                ports:
+                  - "127.0.0.1:5432:5432"
+                environment:
+                  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+                  POSTGRES_DB: postgres
+                  JWT_SECRET: ${JWT_SECRET}
+                volumes:
+                  - ./volumes/db/data:/var/lib/postgresql/data
+                networks: [billingmate]
+                healthcheck:
+                  test: ["CMD-SHELL", "pg_isready -U postgres"]
+                  interval: 5s
+                  timeout: 5s
+                  retries: 10
+
+              kong:
+                image: kong:2.8.1
+                container_name: billingmate-kong
+                restart: unless-stopped
+                environment:
+                  KONG_DATABASE: "off"
+                  KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+                  KONG_DNS_ORDER: LAST,A,CNAME
+                  KONG_PLUGINS: request-transformer,cors,key-auth,acl,basic-auth
+                  KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
+                  KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
+                volumes:
+                  - ./volumes/kong.yml:/var/lib/kong/kong.yml:ro
+                depends_on:
+                  db:
+                    condition: service_healthy
+                networks: [billingmate]
+
+              auth:
+                image: supabase/gotrue:v2.170.0
+                container_name: billingmate-auth
+                restart: unless-stopped
+                depends_on:
+                  db:
+                    condition: service_healthy
+                environment:
+                  GOTRUE_API_HOST: 0.0.0.0
+                  GOTRUE_API_PORT: 9999
+                  API_EXTERNAL_URL: https://api.billing-mate.com
+                  GOTRUE_DB_DRIVER: postgres
+                  GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+                  GOTRUE_SITE_URL: https://billing-mate.com
+                  GOTRUE_URI_ALLOW_LIST: ""
+                  GOTRUE_DISABLE_SIGNUP: "false"
+                  GOTRUE_JWT_ADMIN_ROLES: service_role
+                  GOTRUE_JWT_AUD: authenticated
+                  GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+                  GOTRUE_JWT_EXP: 3600
+                  GOTRUE_JWT_SECRET: ${JWT_SECRET}
+                  GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+                  GOTRUE_MAILER_AUTOCONFIRM: "true"
+                  GOTRUE_SMTP_ADMIN_EMAIL: noreply@billing-mate.com
+                  GOTRUE_MAILER_URLPATHS_INVITE: /auth/v1/verify
+                  GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
+                  GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
+                  GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /auth/v1/verify
+                networks: [billingmate]
+
+              rest:
+                image: postgrest/postgrest:v12.2.8
+                container_name: billingmate-rest
+                restart: unless-stopped
+                depends_on:
+                  db:
+                    condition: service_healthy
+                environment:
+                  PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+                  PGRST_DB_SCHEMAS: public,storage,graphql_public
+                  PGRST_DB_ANON_ROLE: anon
+                  PGRST_JWT_SECRET: ${JWT_SECRET}
+                  PGRST_DB_USE_LEGACY_GUCS: "false"
+                  PGRST_APP_SETTINGS_JWT_SECRET: ${JWT_SECRET}
+                  PGRST_APP_SETTINGS_JWT_EXP: 3600
+                networks: [billingmate]
+
+              realtime:
+                image: supabase/realtime:v2.34.47
+                container_name: billingmate-realtime
+                restart: unless-stopped
+                depends_on:
+                  db:
+                    condition: service_healthy
+                environment:
+                  PORT: 4000
+                  DB_HOST: db
+                  DB_PORT: 5432
+                  DB_USER: supabase_admin
+                  DB_PASSWORD: ${POSTGRES_PASSWORD}
+                  DB_NAME: postgres
+                  DB_AFTER_CONNECT_QUERY: "SET search_path TO _realtime"
+                  DB_ENC_KEY: supabaserealtime
+                  API_JWT_SECRET: ${JWT_SECRET}
+                  SECRET_KEY_BASE: $(openssl rand -hex 32)
+                  ERL_AFLAGS: -proto_dist inet_tcp
+                  DNS_NODES: "''"
+                  RLIMIT_NOFILE: 10000
+                networks: [billingmate]
+
+              storage:
+                image: supabase/storage-api:v1.14.7
+                container_name: billingmate-storage
+                restart: unless-stopped
+                depends_on:
+                  db:
+                    condition: service_healthy
+                  rest:
+                    condition: service_started
+                environment:
+                  ANON_KEY: ${ANON_KEY}
+                  SERVICE_KEY: ${SERVICE_ROLE_KEY}
+                  POSTGREST_URL: http://rest:3000
+                  PGRST_JWT_SECRET: ${JWT_SECRET}
+                  DATABASE_URL: postgres://supabase_storage_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+                  FILE_SIZE_LIMIT: 52428800
+                  STORAGE_BACKEND: file
+                  FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+                  TENANT_ID: stub
+                  REGION: us-east-1
+                  GLOBAL_S3_BUCKET: stub
+                  IS_MULTITENANT: "false"
+                volumes:
+                  - ./volumes/storage:/var/lib/storage
+                networks: [billingmate]
+
+              meta:
+                image: supabase/postgres-meta:v0.84.2
+                container_name: billingmate-meta
+                restart: unless-stopped
+                depends_on:
+                  db:
+                    condition: service_healthy
+                environment:
+                  PG_META_PORT: 8080
+                  PG_META_DB_HOST: db
+                  PG_META_DB_PORT: 5432
+                  PG_META_DB_NAME: postgres
+                  PG_META_DB_USER: supabase_admin
+                  PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
+                networks: [billingmate]
+
+              studio:
+                image: supabase/studio:20241202-4c81922
+                container_name: billingmate-studio
+                restart: unless-stopped
+                depends_on:
+                  db:
+                    condition: service_healthy
+                environment:
+                  STUDIO_PG_META_URL: http://meta:8080
+                  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+                  DEFAULT_ORGANIZATION_NAME: BillingMate
+                  DEFAULT_PROJECT_NAME: BillingMate
+                  SUPABASE_URL: http://kong:8000
+                  SUPABASE_PUBLIC_URL: https://api.billing-mate.com
+                  SUPABASE_ANON_KEY: ${ANON_KEY}
+                  SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
+                  AUTH_JWT_SECRET: ${JWT_SECRET}
+                  NEXT_PUBLIC_ENABLE_LOGS: "true"
+                  NEXT_ANALYTICS_BACKEND_PROVIDER: postgres
+                networks: [billingmate]
+
+              # ---------- App ----------
+              app:
+                image: ghcr.io/${GITHUB_REPO}:latest
+                container_name: billingmate-app
+                restart: unless-stopped
+                env_file: .env.production
+                depends_on:
+                  kong:
+                    condition: service_started
+                networks: [billingmate]
+
+              nginx:
+                image: nginx:alpine
+                container_name: billingmate-nginx
+                restart: unless-stopped
+                ports:
+                  - "80:80"
+                volumes:
+                  - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+                depends_on: [app, kong, studio]
+                networks: [billingmate]
+
+              cron:
+                image: alpine:latest
+                container_name: billingmate-cron
+                restart: unless-stopped
+                depends_on: [app]
+                env_file: .env.production
+                entrypoint: /bin/sh
+                command: -c "echo '0 2 * * * wget -qO- --header=\"Authorization: Bearer '\\\$\$CRON_SECRET'\" http://app:3000/api/cron/daily-sync > /proc/1/fd/1 2>&1' > /etc/crontabs/root && crond -f -l 2"
+                networks: [billingmate]
+
+            networks:
+              billingmate:
+                driver: bridge
+            COMPOSEEOF
+
+            # =============================================
+            # 8. Pull & Deploy
+            # =============================================
+            cd /opt/billingmate
+            echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+            docker compose pull
+            docker compose up -d
+            docker image prune -f
+
+            echo "=== Deploy complete at $(date) ==="

@@ -33,8 +33,9 @@ export async function GET(request: NextRequest) {
         console.log("[v0] Syncing integration:", integration.id, integration.provider)
 
         // Call the appropriate sync endpoint based on provider
-        if (integration.provider === "digitalocean") {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/digitalocean/sync`, {
+        const supportedProviders = ["digitalocean", "datadog", "aws"]
+        if (supportedProviders.includes(integration.provider)) {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/${integration.provider}/sync`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

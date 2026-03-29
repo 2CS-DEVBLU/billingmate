@@ -25,11 +25,12 @@ export function ProviderSelector({ integrations, selectedProvider, companyId }: 
   const searchParams = useSearchParams()
 
   const handleProviderChange = (value: string) => {
-    if (value === "digitalocean") {
-      router.push("/dashboard/digitalocean")
-    } else {
-      router.push("/dashboard/integrations")
+    const providerRoutes: Record<string, string> = {
+      digitalocean: "/dashboard/digitalocean",
+      datadog: "/dashboard/datadog",
+      aws: "/dashboard/aws",
     }
+    router.push(providerRoutes[value] || "/dashboard/integrations")
   }
 
   const activeIntegrations = integrations.filter((i) => i.is_active)

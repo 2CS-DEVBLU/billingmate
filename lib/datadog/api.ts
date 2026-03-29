@@ -28,11 +28,6 @@ export class DatadogAPI {
   constructor(config: DatadogConfig) {
     this.apiKey = config.apiKey
     this.appKey = config.appKey
-    console.log("[v0] Datadog API initialized")
-    console.log("[v0] API Key length:", this.apiKey?.length || 0)
-    console.log("[v0] App Key length:", this.appKey?.length || 0)
-    console.log("[v0] API Key (first 10 chars):", this.apiKey?.substring(0, 10) || "undefined")
-    console.log("[v0] App Key (first 10 chars):", this.appKey?.substring(0, 10) || "undefined")
   }
 
   private async fetch(endpoint: string) {
@@ -44,27 +39,13 @@ export class DatadogAPI {
       "Content-Type": "application/json",
     }
     
-    console.log("[v0] ========== DATADOG API REQUEST ==========")
-    console.log("[v0] URL:", url)
-    console.log("[v0] Headers being sent:")
-    console.log("[v0]   DD-API-KEY:", this.apiKey?.substring(0, 15) + "..." || "undefined")
-    console.log("[v0]   DD-APPLICATION-KEY:", this.appKey?.substring(0, 15) + "..." || "undefined")
-    console.log("[v0]   Content-Type:", headers["Content-Type"])
-    console.log("[v0] Header order: DD-API-KEY (DATADOG_API_KEY), then DD-APPLICATION-KEY (DATADOG_APP_KEY)")
-    console.log("[v0] ==========================================")
-    
     const response = await fetch(url, {
       headers,
     })
 
     if (!response.ok) {
       const body = await response.text()
-      console.error("[v0] ========== API ERROR ==========")
-      console.error("[v0] Status:", response.status)
-      console.error("[v0] Status Text:", response.statusText)
-      console.error("[v0] Response Body:", body)
-      console.error("[v0] ===================================")
-      throw new Error(`Datadog API error: ${response.status}`)
+      throw new Error(`Datadog API error: ${response.status} - ${body}`)
     }
 
     return response.json()
@@ -72,7 +53,7 @@ export class DatadogAPI {
 
   // Get historical cost data (v2 endpoint)
   async getHistoricalCost(startMonth: string, endMonth?: string) {
-    console.log("[v0] Fetching historical cost from", startMonth, "to", endMonth || startMonth)
+
     const endpoint = endMonth 
       ? `/api/v2/usage/historical_cost?start_month=${startMonth}&end_month=${endMonth}`
       : `/api/v2/usage/historical_cost?start_month=${startMonth}`
@@ -81,31 +62,30 @@ export class DatadogAPI {
 
   // Get estimated cost for current/previous month
   async getEstimatedCost() {
-    console.log("[v0] Fetching estimated cost")
+
     return this.fetch(`/api/v2/usage/estimated_cost`)
   }
 
   // Get projected cost
   async getProjectedCost() {
-    console.log("[v0] Fetching projected cost")
+
     return this.fetch(`/api/v2/usage/projected_cost`)
   }
 
   // Get billable summary (v1 endpoint)
   async getBillableSummary(month: string) {
-    console.log("[v0] Fetching billable summary for", month)
+
     return this.fetch(`/api/v1/usage/billable-summary?month=${month}`)
   }
 
   // Get billing dimension mapping
   async getBillingDimensionMapping() {
-    console.log("[v0] Fetching billing dimension mapping")
+
     return this.fetch(`/api/v2/usage/billing_dimension_mapping`)
   }
 
   // Fetch comprehensive billing data with resource breakdown
   async fetchBillingData(year: number, month: number): Promise<BillingData> {
-    console.log("[v0] Fetching Datadog billing data for", year, month)
 
     try {
       const monthStr = `${year}-${String(month).padStart(2, "0")}`
@@ -114,7 +94,7 @@ export class DatadogAPI {
 
       // Fetch historical cost for this specific month
       const historicalData = await this.getHistoricalCost(monthStr).catch((error) => {
-        console.error("[v0] Error fetching historical cost:", error)
+        console.error("Error fetching Datadog historical cost:", error)
         return null
       })
 
@@ -152,7 +132,7 @@ export class DatadogAPI {
       // If historical data is not available or current month, try billable summary
       if (resources.length === 0) {
         const summaryData = await this.getBillableSummary(monthStr).catch((error) => {
-          console.error("[v0] Error fetching billable summary:", error)
+          console.error("Error fetching Datadog billable summary:", error)
           return null
         })
 
@@ -226,7 +206,6 @@ export class DatadogAPI {
         }
       }
 
-      console.log("[v0] Total cost:", totalCost, "Resources:", resources.length)
 
       return {
         billing_period: `${year}-${String(month).padStart(2, "0")}-01`,
@@ -234,7 +213,7 @@ export class DatadogAPI {
         resources,
       }
     } catch (error) {
-      console.error("[v0] Error fetching Datadog billing data:", error)
+      console.error("Error fetching Datadog billing data:", error)
       // Return empty data instead of throwing to allow sync to continue for other months
       return {
         billing_period: `${year}-${String(month).padStart(2, "0")}-01`,
