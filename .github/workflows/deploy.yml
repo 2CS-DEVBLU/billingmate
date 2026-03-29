@@ -304,7 +304,19 @@ jobs:
             KONGEOF
 
             # =============================================
-            # 7. docker-compose.yml
+            # 7. Cron script
+            # =============================================
+            cat > /opt/billingmate/cron.sh <<'CRONEOF'
+            #!/bin/sh
+            CRON_SECRET=$(grep CRON_SECRET /opt/.env | cut -d= -f2)
+            echo "0 2 * * * wget -qO- --header='Authorization: Bearer '${CRON_SECRET} http://app:3000/api/cron/daily-sync > /proc/1/fd/1 2>&1" > /etc/crontabs/root
+            crond -f -l 2
+            CRONEOF
+            sed -i 's/^            //' /opt/billingmate/cron.sh
+            chmod +x /opt/billingmate/cron.sh
+
+            # =============================================
+            # 8. docker-compose.yml
             # =============================================
             cat > /opt/billingmate/docker-compose.yml <<COMPOSEEOF
             services:
@@ -506,9 +518,11 @@ jobs:
                 container_name: billingmate-cron
                 restart: unless-stopped
                 depends_on: [app]
-                env_file: .env.production
+                volumes:
+                  - ./cron.sh:/cron.sh:ro
+                  - ./.env.production:/opt/.env:ro
                 entrypoint: /bin/sh
-                command: -c "echo '0 2 * * * wget -qO- --header=\"Authorization: Bearer '\\\$\$CRON_SECRET'\" http://app:3000/api/cron/daily-sync > /proc/1/fd/1 2>&1' > /etc/crontabs/root && crond -f -l 2"
+                command: /cron.sh
                 networks: [billingmate]
 
             networks:
