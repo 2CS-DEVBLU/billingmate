@@ -472,7 +472,7 @@ jobs:
                 networks: [billingmate]
 
               studio:
-                image: supabase/studio:20241202-4c81922
+                image: supabase/studio:latest
                 container_name: billingmate-studio
                 restart: unless-stopped
                 depends_on:
