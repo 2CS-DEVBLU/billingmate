@@ -9,6 +9,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { BarChart3, Loader2 } from "lucide-react"
+import { useI18n } from "@/lib/i18n/context"
+import { AuthLanguageSwitcher } from "@/components/auth-language-switcher"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -16,6 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { t } = useI18n()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,26 +59,26 @@ export default function LoginPage() {
             <span className="text-3xl font-bold text-white tracking-tight">BillingMate</span>
           </div>
           <h2 className="text-4xl font-bold text-white leading-tight mb-4">
-            Cloud cost intelligence,<br />
-            <span className="gradient-text">simplified.</span>
+            {t.auth.tagline}<br />
+            <span className="gradient-text">{t.auth.taglineHighlight}</span>
           </h2>
           <p className="text-lg text-slate-400 max-w-md">
-            Monitor, analyze and optimize your cloud spending across AWS, DigitalOcean, Datadog and more.
+            {t.auth.description}
           </p>
           <div className="mt-12 flex gap-6 text-sm text-slate-500">
             <div>
               <div className="text-2xl font-bold text-white">40%</div>
-              <div>avg. savings</div>
+              <div>{t.auth.avgSavings}</div>
             </div>
             <div className="w-px bg-white/10" />
             <div>
               <div className="text-2xl font-bold text-white">3+</div>
-              <div>cloud providers</div>
+              <div>{t.auth.cloudProviders}</div>
             </div>
             <div className="w-px bg-white/10" />
             <div>
               <div className="text-2xl font-bold text-white">AI</div>
-              <div>powered insights</div>
+              <div>{t.auth.poweredInsights}</div>
             </div>
           </div>
         </div>
@@ -92,15 +95,18 @@ export default function LoginPage() {
           </div>
 
           <div className="glass border-white/[0.06] rounded-2xl p-8">
-            <div className="mb-6">
-              <h1 className="text-xl font-bold text-white">Welcome back</h1>
-              <p className="text-sm text-slate-500 mt-1">Sign in to your account</p>
+            <div className="mb-6 flex items-start justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-white">{t.auth.welcomeBack}</h1>
+                <p className="text-sm text-slate-500 mt-1">{t.auth.signInAccount}</p>
+              </div>
+              <AuthLanguageSwitcher />
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                  Email
+                  {t.auth.email}
                 </Label>
                 <Input
                   id="email"
@@ -114,7 +120,7 @@ export default function LoginPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                  Password
+                  {t.auth.password}
                 </Label>
                 <Input
                   id="password"
@@ -140,18 +146,18 @@ export default function LoginPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Signing in...
+                    {t.auth.signingIn}
                   </>
                 ) : (
-                  "Sign In"
+                  t.common.signIn
                 )}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm text-slate-500">
-              Don&apos;t have an account?{" "}
+              {t.auth.noAccount}{" "}
               <Link href="/auth/sign-up" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
-                Sign up
+                {t.common.signUp}
               </Link>
             </div>
           </div>
