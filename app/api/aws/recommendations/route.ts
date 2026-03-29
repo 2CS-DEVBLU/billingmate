@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { generateText } from 'ai'
+import { xai } from '@ai-sdk/xai'
 import { checkSubscriptionLimits } from '@/lib/subscription-limits'
 
 export async function POST(req: Request) {
@@ -134,7 +135,7 @@ Priority: "high" | "medium" | "low"
 Category: "cost" | "performance" | "security" | "reliability"`
 
     const { text } = await generateText({
-      model: 'openai/gpt-4o-mini',
+      model: xai('grok-3-mini-fast'),
       prompt: analysisPrompt,
       maxOutputTokens: 2000,
       temperature: 0.5,

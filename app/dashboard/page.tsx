@@ -7,6 +7,7 @@ import { RegistrationIncompleteBanner } from "@/components/registration-incomple
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { UnifiedRecommendations } from "@/components/unified-recommendations"
 
 const PROVIDERS = [
   { id: "digitalocean", name: "DigitalOcean", icon: "DO", color: "from-blue-500 to-cyan-500", description: "Droplets, databases & services" },
@@ -234,11 +235,12 @@ export default async function ClientDashboard() {
         </div>
       </div>
 
-      {/* Provider Breakdown */}
+      {/* AI Recommendations + Provider Breakdown */}
       {integrationStats.length > 0 && (
+        <div className="grid gap-6 lg:grid-cols-[1fr_380px] mb-8">
         <div>
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Cost Breakdown</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             {integrationStats.map((stat) => {
               const provider = PROVIDERS.find((p) => p.id === stat.provider)
               return (
@@ -268,6 +270,11 @@ export default async function ClientDashboard() {
               )
             })}
           </div>
+        </div>
+        <div>
+          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">AI Insights</h2>
+          <UnifiedRecommendations />
+        </div>
         </div>
       )}
 

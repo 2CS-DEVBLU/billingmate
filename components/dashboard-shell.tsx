@@ -1,6 +1,7 @@
 "use client"
 
 import { Sidebar } from "@/components/sidebar"
+import { AiChat } from "@/components/ai-chat"
 
 interface DashboardShellProps {
   children: React.ReactNode
@@ -18,6 +19,7 @@ export function DashboardShell({ children, companyName, isAdmin, userRole }: Das
           {children}
         </div>
       </main>
+      <AiChat />
     </div>
   )
 }

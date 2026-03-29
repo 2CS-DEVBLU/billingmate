@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { generateText } from 'ai'
+import { xai } from '@ai-sdk/xai'
 import { checkSubscriptionLimits } from '@/lib/subscription-limits'
 
 export async function POST(req: Request) {
   try {
-    console.log('[v0] Fetching Datadog AI recommendations')
+
     const { integrationId, timeRange } = await req.json()
 
     const supabase = await createClient()
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
     const limits = await checkSubscriptionLimits(integration.company_id)
     
     if (!limits.canUseAI) {
-      console.log('[v0] AI recommendations disabled for this plan')
+
       return Response.json({
         recommendations: [],
         message: 'AI recommendations are not available on your current plan. Upgrade to Starter or Professional plan to unlock AI-powered insights.',
@@ -138,16 +139,12 @@ Return ONLY valid JSON in this format (no markdown, no extra text):
 Priority: "high" | "medium" | "low"
 Category: "cost" | "performance" | "security" | "reliability"`
 
-    console.log('[v0] Generating Datadog recommendations with AI model for last 3 months')
-
     const { text } = await generateText({
-      model: 'openai/gpt-4o-mini',
+      model: xai('grok-3-mini-fast'),
       prompt: analysisPrompt,
-      maxTokens: 2000,
+      maxOutputTokens: 2000,
       temperature: 0.5,
     })
-
-    console.log('[v0] AI response received, parsing JSON')
 
     let recommendations
     try {
@@ -162,7 +159,7 @@ Category: "cost" | "performance" | "security" | "reliability"`
       recommendations = parsed.recommendations || []
     } catch (parseError) {
       console.error('[v0] Error parsing AI response:', parseError)
-      console.log('[v0] Raw response:', text)
+
       
       recommendations = [
         {
@@ -175,7 +172,6 @@ Category: "cost" | "performance" | "security" | "reliability"`
       ]
     }
 
-    console.log('[v0] Generated', recommendations.length, 'Datadog AI recommendations (3-month analysis)')
 
     return Response.json({ recommendations })
   } catch (error) {
