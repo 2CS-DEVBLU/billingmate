@@ -147,93 +147,7 @@ jobs:
             RESEND_API_KEY=${RESEND_API_KEY}
             EOF
 
-            # =============================================
-            # 5. Nginx config (two server blocks)
-            # =============================================
-            cat > /opt/billingmate/nginx/nginx.conf <<'NGINXEOF'
-            worker_processes auto;
-            events { worker_connections 1024; }
-            http {
-              include /etc/nginx/mime.types;
-              default_type application/octet-stream;
-              sendfile on;
-              keepalive_timeout 65;
-              client_max_body_size 50M;
-              gzip on;
-              gzip_vary on;
-              gzip_proxied any;
-              gzip_comp_level 6;
-              gzip_types text/plain text/css application/json application/javascript text/xml application/xml image/svg+xml;
-              limit_req_zone $binary_remote_addr zone=api:10m rate=30r/s;
-
-              # Next.js app
-              server {
-                listen 80;
-                server_name billing-mate.com www.billing-mate.com;
-
-                location /_next/static {
-                  proxy_pass http://app:3000;
-                  add_header Cache-Control "public, max-age=31536000, immutable";
-                }
-                location /api/ {
-                  limit_req zone=api burst=20 nodelay;
-                  proxy_pass http://app:3000;
-                  proxy_http_version 1.1;
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto https;
-                  proxy_read_timeout 120s;
-                }
-                location / {
-                  proxy_pass http://app:3000;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade $http_upgrade;
-                  proxy_set_header Connection "upgrade";
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto https;
-                }
-              }
-
-              # Supabase API (Kong)
-              server {
-                listen 80;
-                server_name api.billing-mate.com;
-
-                location / {
-                  proxy_pass http://kong:8000;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade $http_upgrade;
-                  proxy_set_header Connection "upgrade";
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto https;
-                  proxy_read_timeout 120s;
-                  proxy_send_timeout 120s;
-                }
-              }
-
-              # Supabase Studio (optional, protected)
-              server {
-                listen 80;
-                server_name studio.billing-mate.com;
-
-                location / {
-                  proxy_pass http://studio:3000;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade $http_upgrade;
-                  proxy_set_header Connection "upgrade";
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto https;
-                }
-              }
-            }
-            NGINXEOF
+            # (nginx moved to shared-nginx in projetacoin repo)
 
             # =============================================
             # 6. Kong config for Supabase
@@ -503,16 +417,7 @@ jobs:
                     condition: service_started
                 networks: [billingmate]
 
-              nginx:
-                image: nginx:alpine
-                container_name: billingmate-nginx
-                restart: unless-stopped
-                ports:
-                  - "80:80"
-                volumes:
-                  - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-                depends_on: [app, kong, studio]
-                networks: [billingmate]
+              # nginx removed — managed by shared-nginx in projetacoin
 
               cron:
                 image: alpine:latest
@@ -548,9 +453,9 @@ jobs:
             # Restart services that depend on correct passwords
             docker compose restart auth rest storage realtime
 
-            # Restart nginx to pick up new container IPs
+            # Restart shared-nginx to pick up new billingmate container IPs
             sleep 5
-            docker compose restart nginx
+            docker restart shared-nginx 2>/dev/null || true
 
             docker image prune -f
 
